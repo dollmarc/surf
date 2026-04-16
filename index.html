@@ -1,0 +1,3102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oregon Coast — Surf Conditions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --sage: #c8d8c0;
+    --mist: #c5d4e0;
+    --sand: #e8dcc8;
+    --blush: #e0c8cc;
+    --foam: #dce8e4;
+    --lavender: #d4cce0;
+    --sky: #ccdce8;
+    --dusk: #4a5568;
+    --ink: #2d3748;
+    --stone: #718096;
+    --pale: #f7f5f0;
+    --white: #ffffff;
+  }
+
+  body {
+    font-family: 'DM Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: var(--pale);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Ambient background blobs */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: -10%;
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(ellipse, rgba(197,212,224,0.35) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -10%;
+    right: -5%;
+    width: 50%;
+    height: 50%;
+    background: radial-gradient(ellipse, rgba(200,216,192,0.3) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 3rem 2rem 4rem;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .location-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--mist);
+    color: var(--dusk);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--stone);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 300;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+
+  h1 em {
+    font-style: italic;
+    font-weight: 300;
+    color: var(--stone);
+  }
+
+  .updated {
+    font-size: 12px;
+    color: var(--stone);
+    font-weight: 300;
+    margin-top: 6px;
+  }
+
+  .header-right {
+    text-align: right;
+  }
+
+  .conditions-badge {
+    display: inline-block;
+    padding: 8px 18px;
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+  }
+
+  .conditions-good { background: var(--sage); color: #2d4a28; }
+  .conditions-fair { background: var(--sand); color: #5a4020; }
+  .conditions-poor { background: var(--blush); color: #5a2830; }
+
+  .air-temp {
+    font-size: 13px;
+    color: var(--stone);
+    font-weight: 300;
+  }
+
+  /* Grid layout */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  @media (max-width: 700px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .grid-2-wide { grid-template-columns: 1fr !important; }
+  }
+
+  .grid-2-wide {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 1.5rem 1.75rem;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .card-tinted {
+    border-radius: 20px;
+    padding: 1.5rem 1.75rem;
+    border: 1px solid rgba(0,0,0,0.04);
+  }
+
+  .card-mist { background: rgba(197,212,224,0.25); }
+  .card-sage { background: rgba(200,216,192,0.25); }
+  .card-sand { background: rgba(232,220,200,0.25); }
+  .card-foam { background: rgba(220,232,228,0.25); }
+  .card-lavender { background: rgba(212,204,224,0.25); }
+  .card-blush { background: rgba(224,200,204,0.25); }
+
+  .card-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--stone);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .label-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.6;
+  }
+
+  /* Swell section */
+  .swell-chart-wrap {
+    position: relative;
+    height: 200px;
+    margin: 0.75rem 0;
+  }
+
+  .swell-legend {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--stone);
+  }
+
+  .legend-swatch {
+    width: 20px;
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  /* Swell detail cards */
+  .swell-rank {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    margin-bottom: 0.4rem;
+  }
+
+  .swell-height {
+    font-size: 2.4rem;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 0.2rem;
+  }
+
+  .swell-unit {
+    font-size: 0.9rem;
+    color: var(--stone);
+    font-weight: 300;
+  }
+
+  .swell-stats {
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+    align-items: baseline;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--stone);
+    font-weight: 400;
+  }
+
+  .stat-value {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--ink);
+  }
+
+  /* Direction arrow */
+  .direction-arrow {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    position: relative;
+  }
+
+  .direction-arrow svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  /* Tide card */
+  .tide-visual {
+    position: relative;
+    height: 90px;
+    margin: 0.75rem 0;
+    overflow: hidden;
+  }
+
+  .tide-canvas {
+    width: 100%;
+    height: 90px;
+    display: block;
+  }
+
+  .tide-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .tide-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 12px;
+  }
+
+  .tide-stat-label {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--stone);
+  }
+
+  .tide-stat-value {
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--ink);
+  }
+
+  .tide-stat-sub {
+    font-size: 11px;
+    color: var(--stone);
+    font-weight: 300;
+  }
+
+  .tide-direction-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-top: 0.5rem;
+  }
+
+  .incoming { background: rgba(197,212,224,0.4); color: #1a4060; }
+  .outgoing { background: rgba(200,216,192,0.4); color: #1a4020; }
+
+  /* Buoy card */
+  .buoy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .buoy-stat {
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 12px;
+  }
+
+  .buoy-stat-label {
+    font-size: 10px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--stone);
+    margin-bottom: 3px;
+  }
+
+  .buoy-stat-value {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--ink);
+  }
+
+  .buoy-name {
+    font-size: 11px;
+    color: var(--stone);
+    font-weight: 300;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(0,0,0,0.06);
+  }
+
+  /* Wind card */
+  .wind-display {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin: 0.75rem 0;
+  }
+
+  .wind-compass {
+    flex-shrink: 0;
+  }
+
+  .wind-compass svg {
+    width: 70px;
+    height: 70px;
+  }
+
+  .wind-number {
+    font-size: 2.8rem;
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  .wind-details {
+    font-size: 12px;
+    color: var(--stone);
+    margin-top: 4px;
+  }
+
+  /* Section divider */
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--stone);
+    margin: 2.5rem 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .section-label:hover { opacity: 0.75; }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(0,0,0,0.08);
+  }
+
+  .section-toggle {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s, transform 0.2s;
+  }
+
+  .section-label:hover .section-toggle {
+    background: rgba(0,0,0,0.1);
+  }
+
+  .section-toggle svg {
+    width: 8px;
+    height: 8px;
+    transition: transform 0.22s ease;
+  }
+
+  .section-body {
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.25s ease, margin 0.3s ease;
+    max-height: 2000px;
+    opacity: 1;
+  }
+
+  .section-body.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-bottom: 0 !important;
+  }
+
+  .section-label.collapsed .section-toggle svg {
+    transform: rotate(-90deg);
+  }
+
+  /* Photo add button inline with section label */
+  .section-photo-add {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.06);
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--stone);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 1;
+    padding: 0;
+    transition: background 0.15s, color 0.15s;
+    margin-left: -2px;
+  }
+  .section-label:hover .section-photo-add {
+    background: rgba(0,0,0,0.1);
+  }
+  .section-photo-add:hover {
+    background: rgba(0,0,0,0.14) !important;
+    color: var(--ink);
+  }
+
+  /* Water temp */
+  .water-temp-big {
+    font-size: 3rem;
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--ink);
+    margin: 0.5rem 0;
+  }
+
+  /* Loading state */
+  .loading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--stone);
+    font-size: 13px;
+    font-weight: 300;
+  }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(0,0,0,0.08);
+    border-top-color: var(--stone);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-text { color: #c0392b; font-size: 13px; }
+
+  /* Windy embed */
+  .windy-wrap {
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+    height: 360px;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .windy-wrap iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .footer-sources {
+    font-size: 11px;
+    color: var(--stone);
+    font-weight: 300;
+  }
+
+  .footer-sources a {
+    color: var(--stone);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .refresh-btn {
+    font-size: 12px;
+    color: var(--dusk);
+    background: var(--mist);
+    border: none;
+    border-radius: 16px;
+    padding: 7px 16px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 400;
+    transition: opacity 0.2s;
+  }
+  .refresh-btn:hover { opacity: 0.8; }
+
+  /* Skeleton shimmer */
+  .skeleton {
+    background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+    height: 20px;
+    width: 80%;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Location nav */
+  .loc-nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 2.5rem;
+    padding: 6px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 24px;
+    border: 1px solid rgba(0,0,0,0.06);
+    backdrop-filter: blur(8px);
+  }
+
+  .loc-btn {
+    flex: 1;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 10px 16px;
+    border-radius: 18px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background 0.18s ease, transform 0.1s ease;
+  }
+
+  .loc-btn:hover {
+    background: rgba(0,0,0,0.04);
+  }
+
+  .loc-btn.active {
+    background: var(--white);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  }
+
+  .loc-btn-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+
+  .loc-btn.active .loc-btn-name {
+    color: var(--ink);
+  }
+
+  .loc-btn:not(.active) .loc-btn-name {
+    color: var(--stone);
+  }
+
+  .loc-btn-sub {
+    font-size: 10px;
+    color: var(--stone);
+    font-weight: 300;
+    letter-spacing: 0.04em;
+  }
+
+  .loc-btn-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 6px;
+    margin-top: 3px;
+  }
+
+  .loc-btn-swell {
+    font-size: 18px;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  .loc-btn-swell em {
+    font-size: 10px;
+    font-style: normal;
+    font-weight: 400;
+    color: var(--stone);
+    margin-left: 1px;
+  }
+
+  .loc-btn:not(.active) .loc-btn-swell {
+    color: var(--stone);
+  }
+
+  .loc-btn-swell.loading-swell {
+    font-size: 11px;
+    color: var(--stone);
+    opacity: 0.4;
+    font-weight: 300;
+  }
+
+  .tag-fave { background: rgba(232,220,200,0.5); color: #7a5520; }
+  .tag-hike { background: rgba(197,212,224,0.5); color: #1a4060; }
+  .tag-consistent { background: rgba(200,216,192,0.5); color: #1a4020; }
+  .tag-reef { background: rgba(212,204,224,0.5); color: #3a2860; }
+
+  @media (max-width: 600px) {
+    .loc-btn { min-width: calc(50% - 8px); }
+  }
+
+  /* Add / edit action column in nav */
+  .loc-nav-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-self: center;
+    flex-shrink: 0;
+  }
+
+  /* Add location button in nav */
+  .loc-add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(0,0,0,0.18);
+    background: transparent;
+    cursor: pointer;
+    font-size: 20px;
+    color: var(--stone);
+    flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    font-family: inherit;
+    line-height: 1;
+  }
+  .loc-add-btn:hover {
+    background: rgba(0,0,0,0.04);
+    border-color: var(--stone);
+    color: var(--ink);
+  }
+
+  /* Edit toggle button in nav */
+  .loc-edit-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(0,0,0,0.12);
+    background: transparent;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--stone);
+    flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    font-family: inherit;
+    line-height: 1;
+  }
+  .loc-edit-toggle-btn:hover {
+    background: rgba(0,0,0,0.04);
+    border-color: var(--stone);
+    color: var(--ink);
+  }
+  .loc-edit-toggle-btn.active {
+    background: var(--mist);
+    border-color: transparent;
+    color: var(--dusk);
+  }
+
+  /* Remove button shown during edit mode */
+  .loc-btn-remove {
+    display: none;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.1);
+    border: none;
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--stone);
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
+    transition: background 0.15s, color 0.15s;
+    font-family: inherit;
+  }
+  .loc-btn-remove:hover { background: rgba(200,50,50,0.25); color: #c0392b; }
+  .loc-btn { position: relative; }
+
+  /* Edit mode — wiggle animation + show remove buttons */
+  .loc-nav.edit-mode .loc-btn {
+    animation: wiggle 0.45s ease infinite alternate;
+  }
+  .loc-nav.edit-mode .loc-btn-remove {
+    display: flex;
+  }
+  @keyframes wiggle {
+    from { transform: rotate(-0.8deg); }
+    to   { transform: rotate(0.8deg); }
+  }
+
+  /* Modal overlay */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(45,55,72,0.4);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--white);
+    border-radius: 24px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    position: relative;
+    animation: modal-in 0.2s ease;
+  }
+
+  @keyframes modal-in {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .modal-title {
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.06);
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--stone);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+  .modal-close:hover { background: rgba(0,0,0,0.1); }
+
+  /* Form fields */
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+  }
+
+  .field-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--stone);
+  }
+
+  .field-input {
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--pale);
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 12px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 100%;
+  }
+  .field-input:focus {
+    border-color: rgba(139,168,190,0.6);
+    box-shadow: 0 0 0 3px rgba(139,168,190,0.15);
+  }
+  .field-input::placeholder { color: var(--stone); opacity: 0.6; }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Search results dropdown */
+  .search-wrap { position: relative; }
+
+  .search-results {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: var(--white);
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    z-index: 10;
+    overflow: hidden;
+    display: none;
+  }
+  .search-results.open { display: block; }
+
+  .search-result-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--ink);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    transition: background 0.1s;
+  }
+  .search-result-item:last-child { border-bottom: none; }
+  .search-result-item:hover { background: var(--pale); }
+  .search-result-item strong { font-weight: 500; }
+  .search-result-item span { font-size: 11px; color: var(--stone); display: block; margin-top: 1px; }
+
+  .search-status {
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--stone);
+    font-style: italic;
+  }
+
+  /* Coord note */
+  .coord-note {
+    font-size: 11px;
+    color: var(--stone);
+    margin-top: -0.5rem;
+    margin-bottom: 1rem;
+    font-weight: 300;
+  }
+
+  /* Tide station field */
+  .tide-station-wrap {
+    position: relative;
+  }
+  .tide-station-status {
+    font-size: 11px;
+    color: var(--stone);
+    margin-top: 4px;
+    font-weight: 300;
+    min-height: 16px;
+  }
+  .tide-station-status.resolving { font-style: italic; }
+  .tide-station-status.found { color: #2d7a4a; }
+  .tide-station-status.error { color: #c0392b; }
+
+  /* Add button */
+  .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+
+  .btn-primary {
+    flex: 1;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--white);
+    background: var(--dusk);
+    border: none;
+    border-radius: 14px;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-secondary {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--stone);
+    background: var(--pale);
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 14px;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-secondary:hover { background: rgba(0,0,0,0.05); }
+
+  /* Divider in modal */
+  .modal-divider {
+    height: 1px;
+    background: rgba(0,0,0,0.06);
+    margin: 1.25rem 0;
+  }
+  .modal-section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--stone);
+    margin-bottom: 0.75rem;
+  }
+
+  /* Photo gallery */
+  .photo-strip {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 4px;
+    scroll-snap-type: x mandatory;
+  }
+  .photo-strip::-webkit-scrollbar { display: none; }
+
+  .photo-tile {
+    flex: 0 0 300px;
+    width: 300px;
+    height: 300px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(0,0,0,0.04);
+    scroll-snap-align: start;
+    position: relative;
+  }
+
+  .photo-tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease, opacity 0.3s ease;
+    opacity: 0;
+  }
+
+  .photo-tile img.loaded {
+    opacity: 1;
+  }
+
+  .photo-tile:hover img {
+    transform: scale(1.04);
+  }
+
+  .photo-tile-skeleton {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 16px;
+    transition: opacity 0.3s ease;
+  }
+
+  .photo-tile.img-loaded .photo-tile-skeleton {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .photo-load-more {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+  }
+
+  .photo-load-more button {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--dusk);
+    background: rgba(255,255,255,0.8);
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 20px;
+    padding: 10px 18px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, opacity 0.15s;
+    backdrop-filter: blur(4px);
+  }
+
+  .photo-load-more button:hover:not(:disabled) {
+    background: var(--white);
+  }
+
+  .photo-load-more button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  /* Delete badge on user-uploaded tiles */
+  .photo-tile-delete {
+    display: none;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(20,24,32,0.55);
+    backdrop-filter: blur(4px);
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
+    transition: background 0.15s;
+    z-index: 2;
+    font-family: inherit;
+  }
+  .photo-tile.user-photo:hover .photo-tile-delete { display: flex; }
+  .photo-tile-delete:hover { background: rgba(180,40,40,0.75); }
+
+  /* User photo badge */
+  .photo-tile-user-badge {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.75);
+    background: rgba(20,24,32,0.45);
+    backdrop-filter: blur(4px);
+    padding: 3px 7px;
+    border-radius: 6px;
+    pointer-events: none;
+  }
+
+  .photo-tile.img-loaded { cursor: zoom-in; }
+
+  /* Lightbox overlay */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    background: rgba(20, 24, 32, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lightbox.open {
+    display: flex;
+    animation: lb-in 0.18s ease;
+  }
+
+  @keyframes lb-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  .lightbox-img-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: calc(100vw - 140px);
+    max-height: calc(100vh - 100px);
+  }
+
+  .lightbox-img-wrap img {
+    display: block;
+    max-width: 100%;
+    max-height: calc(100vh - 100px);
+    width: auto;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    transition: opacity 0.22s ease;
+    object-fit: contain;
+  }
+
+  .lightbox-img-wrap img.lb-loading { opacity: 0; }
+
+  .lightbox-spinner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .lightbox-spinner .spinner {
+    width: 28px;
+    height: 28px;
+    border-width: 2.5px;
+    border-color: rgba(255,255,255,0.15);
+    border-top-color: rgba(255,255,255,0.7);
+  }
+
+  .lightbox-caption {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem 5rem;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.03em;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .lightbox-close {
+    position: fixed;
+    top: 1.25rem;
+    right: 1.25rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.8);
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+  .lightbox-close:hover { background: rgba(255,255,255,0.18); }
+
+  .lightbox-nav {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.85);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, opacity 0.15s;
+    user-select: none;
+    line-height: 1;
+  }
+  .lightbox-nav:hover { background: rgba(255,255,255,0.18); }
+  .lightbox-nav:disabled { opacity: 0.2; cursor: default; pointer-events: none; }
+  .lightbox-prev { left: 1.25rem; }
+  .lightbox-next { right: 1.25rem; }
+
+  .lightbox-counter {
+    position: fixed;
+    top: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    color: rgba(255,255,255,0.4);
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- Location Nav -->
+  <nav class="loc-nav" id="loc-nav">
+    <button class="loc-btn active" data-loc="cannon-beach" onclick="switchLocation('cannon-beach')">
+      <span class="loc-btn-remove" onclick="removeLocation(event,'cannon-beach')" title="Remove">✕</span>
+      <span class="loc-btn-swell loading-swell" id="nav-swell-cannon-beach">—</span>
+      <span class="loc-btn-name">The Needles</span>
+      <span class="loc-btn-sub">Cannon Beach</span>
+      <span class="loc-btn-tag tag-fave">Favorite</span>
+    </button>
+    <button class="loc-btn" data-loc="indian-beach" onclick="switchLocation('indian-beach')">
+      <span class="loc-btn-remove" onclick="removeLocation(event,'indian-beach')" title="Remove">✕</span>
+      <span class="loc-btn-swell loading-swell" id="nav-swell-indian-beach">—</span>
+      <span class="loc-btn-name">Indian Beach</span>
+      <span class="loc-btn-sub">Ecola State Park</span>
+      <span class="loc-btn-tag tag-hike">NW/W swell</span>
+    </button>
+    <button class="loc-btn" data-loc="short-sands" onclick="switchLocation('short-sands')">
+      <span class="loc-btn-remove" onclick="removeLocation(event,'short-sands')" title="Remove">✕</span>
+      <span class="loc-btn-swell loading-swell" id="nav-swell-short-sands">—</span>
+      <span class="loc-btn-name">Short Sands</span>
+      <span class="loc-btn-sub">Oswald West</span>
+      <span class="loc-btn-tag tag-consistent">Most consistent</span>
+    </button>
+    <button class="loc-btn" data-loc="the-cove" onclick="switchLocation('the-cove')">
+      <span class="loc-btn-remove" onclick="removeLocation(event,'the-cove')" title="Remove">✕</span>
+      <span class="loc-btn-swell loading-swell" id="nav-swell-the-cove">—</span>
+      <span class="loc-btn-name">The Cove</span>
+      <span class="loc-btn-sub">Seaside</span>
+      <span class="loc-btn-tag tag-reef">Point break</span>
+    </button>
+    <div class="loc-nav-actions">
+      <button class="loc-add-btn" onclick="openAddModal()" title="Add location">+</button>
+      <button class="loc-edit-toggle-btn" id="loc-edit-toggle" onclick="toggleEditMode()" title="Edit spots">✎</button>
+    </div>
+  </nav>
+
+  <!-- Add Location Modal -->
+  <div class="modal-overlay" id="add-modal" onclick="handleOverlayClick(event)">
+    <div class="modal">
+      <button class="modal-close" onclick="closeAddModal()">✕</button>
+      <div class="modal-title">Add a location</div>
+
+      <!-- Place search -->
+      <div class="field-group">
+        <div class="field-label">Search for a spot</div>
+        <div class="search-wrap">
+          <input class="field-input" id="place-search" type="text" placeholder="e.g. Pacific City, Oregon" autocomplete="off"
+            oninput="onPlaceSearch(this.value)" onkeydown="onSearchKeydown(event)">
+          <div class="search-results" id="search-results"></div>
+        </div>
+      </div>
+
+      <div class="modal-divider"></div>
+      <div class="modal-section-label">Location details</div>
+
+      <!-- Name + Area -->
+      <div class="field-row">
+        <div class="field-group" style="margin-bottom:0;">
+          <div class="field-label">Spot name</div>
+          <input class="field-input" id="loc-name" type="text" placeholder="e.g. Cape Kiwanda">
+        </div>
+        <div class="field-group" style="margin-bottom:0;">
+          <div class="field-label">Area / town</div>
+          <input class="field-input" id="loc-subtitle" type="text" placeholder="e.g. Pacific City">
+        </div>
+      </div>
+
+      <!-- Coords -->
+      <div class="field-row" style="margin-top:1rem;">
+        <div class="field-group" style="margin-bottom:0;">
+          <div class="field-label">Latitude</div>
+          <input class="field-input" id="loc-lat" type="number" step="0.0001" placeholder="45.2100"
+            onchange="onCoordsChanged()">
+        </div>
+        <div class="field-group" style="margin-bottom:0;">
+          <div class="field-label">Longitude</div>
+          <input class="field-input" id="loc-lon" type="number" step="0.0001" placeholder="-123.9600"
+            onchange="onCoordsChanged()">
+        </div>
+      </div>
+      <div class="coord-note">Coordinates auto-fill from search, or enter manually.</div>
+
+      <!-- Tide station -->
+      <div class="field-group">
+        <div class="field-label">NOAA Tide Station ID</div>
+        <div class="tide-station-wrap">
+          <input class="field-input" id="loc-tide-station" type="text" placeholder="Auto-resolved from coordinates">
+          <div class="tide-station-status" id="tide-station-status"></div>
+        </div>
+      </div>
+
+      <!-- NOAA Buoy -->
+      <div class="field-group">
+        <div class="field-label">NOAA Buoy ID <span style="font-weight:300;text-transform:none;letter-spacing:0;">(optional)</span></div>
+        <input class="field-input" id="loc-buoy" type="text" placeholder="e.g. 46029" value="46029">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeAddModal()">Cancel</button>
+        <button class="btn-primary" id="add-loc-btn" onclick="addLocation()" disabled>Add location</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="location-pill">
+        <div class="dot"></div>
+        <span id="header-coords">Oregon Coast · 45.89°N 123.96°W</span>
+      </div>
+      <p class="updated" id="updated-time">Fetching live data…</p>
+    </div>
+    <div class="header-right">
+      <div class="conditions-badge conditions-fair" id="overall-badge">—</div>
+      <div class="air-temp" id="air-temp-header">Air: —°F</div>
+    </div>
+  </div>
+
+  <!-- Photo Gallery -->
+  <div class="section-label" onclick="toggleSection('photos')">Photos<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><button class="section-photo-add" onclick="event.stopPropagation();triggerPhotoUpload()" title="Add your photos">+</button></div>
+  <div class="section-body" id="section-photos" style="margin-bottom:1.25rem;">
+    <div class="photo-strip" id="photo-strip"></div>
+  </div>
+
+  <!-- Swell Chart + Primary Swell card -->
+  <div class="section-label" onclick="toggleSection('swell')">Swell<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+
+  <div class="section-body" id="section-swell">
+    <div class="card" style="margin-bottom:1.25rem;">
+      <div class="card-label"><div class="label-dot"></div>Swell components — height over 12 hours</div>
+      <div class="swell-chart-wrap">
+        <canvas id="swellChart" role="img" aria-label="Swell height chart for primary and secondary swells">Loading swell data…</canvas>
+      </div>
+      <div class="swell-legend">
+        <div class="legend-item"><div class="legend-swatch" style="background:#8ba8be;"></div>Primary</div>
+        <div class="legend-item"><div class="legend-swatch" style="background:#a8be94;"></div>Secondary</div>
+      </div>
+    </div>
+
+    <!-- Swell detail cards -->
+    <div class="grid-2">
+      <div class="card-tinted card-mist" id="primary-swell">
+        <div class="swell-rank">Primary swell</div>
+        <div class="loading"><div class="spinner"></div>Loading…</div>
+      </div>
+      <div class="card-tinted card-sage" id="secondary-swell">
+        <div class="swell-rank">Secondary swell</div>
+        <div class="loading"><div class="spinner"></div>Loading…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tide -->
+  <div class="section-label" onclick="toggleSection('tides')">Tides<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+
+  <div class="section-body" id="section-tides">
+    <div class="card-tinted card-foam" style="margin-bottom:1.25rem; border-radius:20px; padding:1.5rem 1.75rem; border:1px solid rgba(0,0,0,0.04);">
+      <div class="card-label"><div class="label-dot"></div><span id="tide-station-label">Tide — Cannon Beach (Station 9437540 Tillamook Bay)</span></div>
+      <div class="tide-visual">
+        <canvas class="tide-canvas" id="tideCanvas" role="img" aria-label="Tide level visualization showing current level and trend"></canvas>
+      </div>
+      <div id="tide-direction-wrap"></div>
+      <div class="tide-stats" id="tide-stats">
+        <div class="tide-stat"><div class="tide-stat-label">Current</div><div class="tide-stat-value">—</div></div>
+        <div class="tide-stat"><div class="tide-stat-label">Next High</div><div class="tide-stat-value">—</div></div>
+        <div class="tide-stat"><div class="tide-stat-label">Next Low</div><div class="tide-stat-value">—</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wind + Buoy -->
+  <div class="section-label" onclick="toggleSection('conditions')">Conditions<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+
+  <div class="section-body" id="section-conditions">
+    <div class="grid-2">
+      <div class="card-tinted card-lavender" style="border-radius:20px; padding:1.5rem 1.75rem; border:1px solid rgba(0,0,0,0.04);">
+        <div class="card-label"><div class="label-dot"></div>Wind</div>
+        <div class="wind-display" id="wind-display">
+          <div class="loading"><div class="spinner"></div>Loading…</div>
+        </div>
+      </div>
+
+      <div class="card-tinted card-blush" style="border-radius:20px; padding:1.5rem 1.75rem; border:1px solid rgba(0,0,0,0.04);">
+        <div class="card-label"><div class="label-dot"></div>Buoy readings</div>
+        <div id="buoy-display">
+          <div class="loading"><div class="spinner"></div>Loading NOAA buoy…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Water temp + Air temp -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-label"><div class="label-dot"></div>Water temperature</div>
+        <div class="water-temp-big" id="water-temp">—°F</div>
+        <div style="font-size:12px; color:var(--stone); margin-top:6px; font-weight:300;" id="water-temp-note">Oregon coast average 48–55°F year-round</div>
+      </div>
+      <div class="card">
+        <div class="card-label"><div class="label-dot"></div>Air temperature</div>
+        <div class="water-temp-big" id="air-temp-card">—°F</div>
+        <div style="font-size:12px; color:var(--stone); margin-top:6px; font-weight:300;" id="air-temp-location">Cannon Beach, OR</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Windy Map -->
+  <div class="section-label" onclick="toggleSection('map')">Wind & swell map<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+  <div class="section-body" id="section-map">
+    <div class="windy-wrap">
+      <iframe id="windy-iframe"
+        src="https://embed.windy.com/embed2.html?lat=45.89&lon=-123.96&detailLat=45.89&detailLon=-123.96&width=650&height=450&zoom=9&level=surface&overlay=waves&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=true&metricWind=mph&metricTemp=%C2%B0F&radarRange=-1"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-sources">
+      Data: <a href="https://www.ndbc.noaa.gov/station_page.php?station=46029" target="_blank">NOAA Buoy 46029 (Columbia River)</a> ·
+      <a href="https://api.open-meteo.com" target="_blank">Open-Meteo Marine API</a> ·
+      <a href="https://tidesandcurrents.noaa.gov/api/" target="_blank">NOAA Tides API</a> ·
+      <a href="https://windy.com" target="_blank">Windy</a>
+    </div>
+    <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+  </div>
+
+</div>
+
+
+<!-- Hidden photo upload input -->
+<input type="file" id="photo-upload-input" accept="image/*" multiple style="display:none" onchange="handlePhotoUpload(event)">
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="lbHandleBackdropClick(event)">
+  <button class="lightbox-close" onclick="lbClose()" title="Close (Esc)">&#x2715;</button>
+  <button class="lightbox-nav lightbox-prev" id="lb-prev" onclick="lbStep(-1)" title="Previous">&#x2039;</button>
+  <div class="lightbox-img-wrap" id="lb-img-wrap">
+    <div class="lightbox-spinner" id="lb-spinner"><div class="spinner"></div></div>
+    <img id="lb-img" src="" alt="" class="lb-loading">
+  </div>
+  <button class="lightbox-nav lightbox-next" id="lb-next" onclick="lbStep(1)" title="Next">&#x203a;</button>
+  <div class="lightbox-counter" id="lb-counter"></div>
+  <div class="lightbox-caption" id="lb-caption"></div>
+</div>
+
+<script>
+
+// ─── Location definitions ─────────────────────────────────────────────────
+const LOCATIONS = {
+  'cannon-beach': {
+    id: 'cannon-beach',
+    name: 'The Needles',
+    subtitle: 'Cannon Beach',
+    titleHTML: 'The Needles <em>/ Cannon Beach</em>',
+    lat: 45.8918,
+    lon: -123.9615,
+    coordLabel: 'Oregon Coast · 45.89°N 123.96°W',
+    tideStation: '9437540',
+    tideLabel: 'Tillamook Bay',
+    buoyId: '46029',
+    buoyLabel: 'Columbia River Bar',
+    notes: 'Refracts around Haystack Rock. Fickle — needs N swell + offshore + right sand.',
+    windyZoom: 12,
+    airTempLabel: 'Cannon Beach, OR',
+  },
+  'indian-beach': {
+    id: 'indian-beach',
+    name: 'Indian Beach',
+    subtitle: 'Ecola State Park',
+    titleHTML: 'Indian Beach <em>/ Ecola State Park</em>',
+    lat: 45.9274,
+    lon: -123.9800,
+    coordLabel: 'Oregon Coast · 45.93°N 123.98°W',
+    tideStation: '9437540',
+    tideLabel: 'Tillamook Bay',
+    buoyId: '46029',
+    buoyLabel: 'Columbia River Bar',
+    notes: 'Works best on NW/W swell. Lighter crowds due to the hike in. Consistent beachbreak.',
+    windyZoom: 12,
+    airTempLabel: 'Ecola State Park, OR',
+  },
+  'short-sands': {
+    id: 'short-sands',
+    name: 'Short Sands',
+    subtitle: 'Oswald West State Park',
+    titleHTML: 'Short Sands <em>/ Oswald West</em>',
+    lat: 45.7628,
+    lon: -123.9652,
+    coordLabel: 'Oregon Coast · 45.76°N 123.97°W',
+    tideStation: '9437540',
+    tideLabel: 'Tillamook Bay',
+    buoyId: '46029',
+    buoyLabel: 'Columbia River Bar',
+    notes: 'Most consistent break on the north coast. Friendly vibe. Long hike with a longboard.',
+    windyZoom: 12,
+    airTempLabel: 'Manzanita, OR',
+  },
+  'the-cove': {
+    id: 'the-cove',
+    name: 'The Cove',
+    subtitle: 'Seaside',
+    titleHTML: 'The Cove <em>/ Seaside</em>',
+    lat: 45.9940,
+    lon: -123.9350,
+    coordLabel: 'Oregon Coast · 45.99°N 123.94°W',
+    tideStation: '9439040',
+    tideLabel: 'Columbia River (Astoria)',
+    buoyId: '46029',
+    buoyLabel: 'Columbia River Bar',
+    notes: 'Protected point break. Works on N swell. More sheltered from wind than open beachbreaks.',
+    windyZoom: 12,
+    airTempLabel: 'Seaside, OR',
+  },
+};
+
+// ─── Active location state ─────────────────────────────────────────────────
+let currentLocId = 'cannon-beach';
+let currentLoc = LOCATIONS[currentLocId];
+let swellChart = null;
+
+// ─── User photos (localStorage) ───────────────────────────────────────────
+const USER_PHOTOS_KEY = 'surf-user-photos'; // { [locId]: [ { dataUrl, name } ] }
+
+function loadUserPhotos() {
+  try { return JSON.parse(localStorage.getItem(USER_PHOTOS_KEY) || '{}'); } catch(e) { return {}; }
+}
+
+function saveUserPhotos(allPhotos) {
+  try { localStorage.setItem(USER_PHOTOS_KEY, JSON.stringify(allPhotos)); } catch(e) {
+    // Storage quota exceeded — warn gently
+    console.warn('Photo storage full. Remove some photos to free space.');
+  }
+}
+
+function getUserPhotosForLoc(locId) {
+  return loadUserPhotos()[locId] || [];
+}
+
+function triggerPhotoUpload() {
+  const input = document.getElementById('photo-upload-input');
+  // Stamp the current location on the input so the handler knows where to save
+  input.dataset.locId = currentLocId;
+  input.value = '';
+  input.click();
+}
+
+function handlePhotoUpload(event) {
+  const files = Array.from(event.target.files);
+  const locId = event.target.dataset.locId || currentLocId;
+  if (!files.length) return;
+
+  const allPhotos = loadUserPhotos();
+  if (!allPhotos[locId]) allPhotos[locId] = [];
+
+  let processed = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      allPhotos[locId].push({ dataUrl, name: file.name.replace(/\.[^.]+$/, '') });
+      processed++;
+      if (processed === files.length) {
+        saveUserPhotos(allPhotos);
+        // Re-render only if still on same location
+        if (currentLocId === locId) {
+          renderUserPhotoTiles(locId);
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function deleteUserPhoto(locId, index) {
+  const allPhotos = loadUserPhotos();
+  if (!allPhotos[locId]) return;
+  allPhotos[locId].splice(index, 1);
+  saveUserPhotos(allPhotos);
+  if (currentLocId === locId) renderUserPhotoTiles(locId);
+}
+
+function renderUserPhotoTiles(locId) {
+  const strip = document.getElementById('photo-strip');
+  if (!strip) return;
+
+  // Remove existing user tiles
+  strip.querySelectorAll('.user-photo').forEach(el => el.remove());
+
+  const photos = getUserPhotosForLoc(locId);
+
+  // Build user photo tiles (prepend in reverse so first uploaded = first shown)
+  const fragment = document.createDocumentFragment();
+
+  photos.forEach(({ dataUrl, name }, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'photo-tile user-photo img-loaded';
+    tile.dataset.photoUrl = dataUrl;
+    tile.dataset.photoAlt = name;
+    tile.dataset.userIndex = i;
+
+    const img = document.createElement('img');
+    img.src = dataUrl;
+    img.alt = name;
+    img.className = 'loaded';
+    tile.appendChild(img);
+
+    const badge = document.createElement('div');
+    badge.className = 'photo-tile-user-badge';
+    badge.textContent = 'My photo';
+    tile.appendChild(badge);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'photo-tile-delete';
+    delBtn.title = 'Remove photo';
+    delBtn.innerHTML = '✕';
+    delBtn.onclick = (e) => {
+      e.stopPropagation();
+      deleteUserPhoto(locId, parseInt(tile.dataset.userIndex));
+    };
+    tile.appendChild(delBtn);
+
+    // Click opens lightbox
+    tile.addEventListener('click', () => {
+      const allTiles = Array.from(strip.querySelectorAll('.photo-tile[data-photo-url]'));
+      lbOpen(allTiles.indexOf(tile));
+    });
+
+    fragment.appendChild(tile);
+  });
+
+  // Prepend user photos before the first wikimedia tile
+  const firstWikiTile = strip.querySelector('.photo-tile:not(.user-photo)');
+  if (firstWikiTile) {
+    strip.insertBefore(fragment, firstWikiTile);
+  } else {
+    strip.prepend(fragment);
+  }
+}
+
+// ─── Photo gallery ─────────────────────────────────────────────────────────
+// One broad search term per location — supports pagination via gsrcontinue
+const LOCATION_PHOTO_SEARCH = {
+  'cannon-beach': 'Haystack Rock Cannon Beach Oregon coast',
+  'indian-beach':  'Indian Beach Ecola State Park Oregon',
+  'short-sands':   'Short Sands Beach Oregon surfing Oswald West',
+  'the-cove':      'Seaside Oregon coast beach Tillamook Head',
+};
+
+// Fallback queries tried if primary returns no images
+const LOCATION_PHOTO_FALLBACK = {
+  'short-sands': ['Oswald West State Park Oregon', 'Manzanita Oregon beach coast'],
+};
+
+const PHOTOS_PER_PAGE = 5;
+
+// Per-location state: loaded URLs, continuation token, loading flag
+const photoState = {};
+
+function getPhotoState(locId) {
+  if (!photoState[locId]) {
+    photoState[locId] = { urls: [], gsrcontinue: null, exhausted: false, loading: false };
+  }
+  return photoState[locId];
+}
+
+async function fetchCommonsPage(locId, queryOverride) {
+  const state = getPhotoState(locId);
+  if (state.loading || state.exhausted) return [];
+  state.loading = true;
+
+  const query = queryOverride || LOCATION_PHOTO_SEARCH[locId] || LOCATIONS[locId]?.name + ' Oregon coast' || locId;
+  let url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(query)}&gsrlimit=${PHOTOS_PER_PAGE}&prop=imageinfo&iiprop=url|thumburl|mediatype&iiurlwidth=600&format=json&origin=*`;
+  if (state.gsrcontinue) url += `&gsroffset=${encodeURIComponent(state.gsrcontinue)}`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    const pages = Object.values(data?.query?.pages || {});
+    const newUrls = pages
+      .filter(p => {
+        const mt = p?.imageinfo?.[0]?.mediatype;
+        return mt === 'BITMAP' || mt === 'DRAWING';
+      })
+      .map(p => ({ url: p.imageinfo[0].thumburl, alt: p.title.replace(/^File:/, '').replace(/\.[^.]+$/, '') }))
+      .filter(p => p.url);
+
+    // Continuation offset
+    const cont = data?.continue?.gsroffset;
+    state.gsrcontinue = cont ?? null;
+    if (!cont) state.exhausted = true;
+
+    state.urls.push(...newUrls);
+    state.loading = false;
+    return newUrls;
+  } catch(e) {
+    state.loading = false;
+    state.exhausted = true;
+    return [];
+  }
+}
+
+function appendPhotoTiles(locId, items, scrollToNew = false) {
+  const strip = document.getElementById('photo-strip');
+  if (!strip) return;
+
+  const firstNewIndex = strip.querySelectorAll('.photo-tile').length;
+
+  items.forEach(({ url, alt }, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'photo-tile';
+    tile.id = `photo-tile-${locId}-${firstNewIndex + i}`;
+
+    const skeleton = document.createElement('div');
+    skeleton.className = 'photo-tile-skeleton';
+    tile.appendChild(skeleton);
+
+    // Store source data on tile element for reliable lightbox access
+    tile.dataset.photoUrl = url;
+    tile.dataset.photoAlt = alt;
+
+    const img = document.createElement('img');
+    img.alt = alt;
+    img.loading = 'lazy';
+    img.onload = () => {
+      img.classList.add('loaded');
+      tile.classList.add('img-loaded');
+    };
+    img.onerror = () => { tile.style.display = 'none'; };
+    img.src = url;
+    tile.appendChild(img);
+
+    // Click opens lightbox — index based on all tiles with data-photo-url
+    tile.addEventListener('click', () => {
+      const strip = document.getElementById('photo-strip');
+      const allTiles = Array.from(strip.querySelectorAll('.photo-tile[data-photo-url]'));
+      const idx = allTiles.indexOf(tile);
+      lbOpen(idx >= 0 ? idx : 0);
+    });
+
+    // Insert before the load-more button if present
+    const loadMoreBtn = strip.querySelector('.photo-load-more');
+    if (loadMoreBtn) strip.insertBefore(tile, loadMoreBtn);
+    else strip.appendChild(tile);
+  });
+
+  if (scrollToNew && firstNewIndex > 0) {
+    const newTile = document.getElementById(`photo-tile-${locId}-${firstNewIndex}`);
+    newTile?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+  }
+}
+
+function updateLoadMoreBtn(locId) {
+  const strip = document.getElementById('photo-strip');
+  if (!strip) return;
+  const state = getPhotoState(locId);
+  let btn = strip.querySelector('.photo-load-more');
+
+  if (state.exhausted) {
+    btn?.remove();
+    return;
+  }
+
+  if (!btn) {
+    btn = document.createElement('div');
+    btn.className = 'photo-load-more';
+    btn.innerHTML = `<button onclick="loadMorePhotos('${locId}')">Load more</button>`;
+    strip.appendChild(btn);
+  }
+  // Reset to idle state
+  btn.querySelector('button').disabled = false;
+  btn.querySelector('button').textContent = 'Load more';
+}
+
+async function loadMorePhotos(locId) {
+  if (currentLocId !== locId) return;
+  const state = getPhotoState(locId);
+  const strip = document.getElementById('photo-strip');
+  const btn = strip?.querySelector('.photo-load-more button');
+  if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+
+  const newItems = await fetchCommonsPage(locId);
+  if (currentLocId !== locId) return; // user switched while loading
+
+  // Add 5 skeleton placeholders while images load
+  if (newItems.length) appendPhotoTiles(locId, newItems, true);
+  updateLoadMoreBtn(locId);
+}
+
+async function renderPhotoGallery(locId) {
+  const strip = document.getElementById('photo-strip');
+  if (!strip) return;
+
+  // Reset strip and state for this location
+  strip.innerHTML = '';
+  photoState[locId] = { urls: [], gsrcontinue: null, exhausted: false, loading: false };
+
+  // Build primary query: use known map, or for custom spots use name + subtitle
+  const loc = LOCATIONS[locId];
+  let primaryQuery = LOCATION_PHOTO_SEARCH[locId];
+  if (!primaryQuery && loc) {
+    primaryQuery = [loc.name, loc.subtitle, 'Oregon coast'].filter(Boolean).join(' ');
+  }
+
+  // Show 5 skeletons while first page loads
+  for (let i = 0; i < PHOTOS_PER_PAGE; i++) {
+    const tile = document.createElement('div');
+    tile.className = 'photo-tile photo-tile-loading';
+    const sk = document.createElement('div');
+    sk.className = 'photo-tile-skeleton';
+    tile.appendChild(sk);
+    strip.appendChild(tile);
+  }
+
+  let items = await fetchCommonsPage(locId, primaryQuery);
+  if (currentLocId !== locId) return;
+
+  // If primary returned nothing, try fallbacks in order
+  if (!items.length) {
+    const fallbacks = LOCATION_PHOTO_FALLBACK[locId] || [];
+    // For custom spots, also try just the spot name alone, then subtitle alone
+    if (loc?.custom) {
+      if (loc.name) fallbacks.push(loc.name + ' Oregon');
+      if (loc.subtitle) fallbacks.push(loc.subtitle + ' Oregon coast');
+      fallbacks.push('Oregon coast surfing beach');
+    }
+    for (const q of fallbacks) {
+      // Reset state to allow a fresh fetch with the new query
+      photoState[locId] = { urls: [], gsrcontinue: null, exhausted: false, loading: false };
+      items = await fetchCommonsPage(locId, q);
+      if (currentLocId !== locId) return;
+      if (items.length) break;
+    }
+  }
+
+  // Replace skeletons with real tiles
+  strip.innerHTML = '';
+
+  if (!items.length) {
+    strip.innerHTML = '<div style="font-size:12px;color:var(--stone);padding:1rem 0;flex-shrink:0;">No photos found for this spot.</div>';
+    renderUserPhotoTiles(locId);
+    return;
+  }
+
+  appendPhotoTiles(locId, items, false);
+  updateLoadMoreBtn(locId);
+  renderUserPhotoTiles(locId);
+}
+
+// ─── Lightbox ──────────────────────────────────────────────────────────────
+let lbItems = [];   // { url, fullUrl, alt } — all loaded photos for current location
+let lbIndex = 0;
+
+function lbOpen(index) {
+  const strip = document.getElementById('photo-strip');
+  if (!strip) return;
+  // Read from data attributes — reliable regardless of img load state
+  const tiles = strip.querySelectorAll('.photo-tile[data-photo-url]');
+  lbItems = Array.from(tiles).map(tile => {
+    const thumb = tile.dataset.photoUrl || '';
+    // Wikimedia thumb URLs look like: /600px-Filename.jpg
+    // Request a larger version by bumping the width
+    const full = thumb.replace(/\/\d+px-/, '/1200px-');
+    return { url: full, fallback: thumb, alt: tile.dataset.photoAlt || '' };
+  });
+
+  if (!lbItems.length) return;
+  lbIndex = Math.max(0, Math.min(index, lbItems.length - 1));
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  lbShow(lbIndex);
+}
+
+function lbShow(index) {
+  lbIndex = index;
+  const item = lbItems[index];
+  if (!item) return;
+
+  const imgEl     = document.getElementById('lb-img');
+  const spinner   = document.getElementById('lb-spinner');
+  const caption   = document.getElementById('lb-caption');
+  const counter   = document.getElementById('lb-counter');
+  const prevBtn   = document.getElementById('lb-prev');
+  const nextBtn   = document.getElementById('lb-next');
+
+  // Loading state
+  imgEl.classList.add('lb-loading');
+  spinner.style.display = 'flex';
+
+  imgEl.onload = () => {
+    imgEl.classList.remove('lb-loading');
+    spinner.style.display = 'none';
+  };
+  imgEl.onerror = () => {
+    // Fall back to original thumbnail if larger version fails
+    if (item.fallback && imgEl.src !== item.fallback) {
+      imgEl.src = item.fallback;
+    } else {
+      spinner.style.display = 'none';
+      imgEl.classList.remove('lb-loading');
+    }
+  };
+
+  imgEl.src = item.url;
+  imgEl.alt = item.alt;
+  caption.textContent = item.alt;
+  counter.textContent = `${index + 1} / ${lbItems.length}`;
+
+  prevBtn.disabled = index === 0;
+  nextBtn.disabled = index === lbItems.length - 1;
+}
+
+function lbStep(dir) {
+  const next = lbIndex + dir;
+  if (next < 0 || next >= lbItems.length) return;
+  lbShow(next);
+}
+
+function lbClose() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+  const imgEl = document.getElementById('lb-img');
+  imgEl.src = '';
+}
+
+function lbHandleBackdropClick(e) {
+  if (e.target === document.getElementById('lightbox')) lbClose();
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+  const lb = document.getElementById('lightbox');
+  if (lb.classList.contains('open')) {
+    if (e.key === 'Escape')      lbClose();
+    if (e.key === 'ArrowRight')  lbStep(1);
+    if (e.key === 'ArrowLeft')   lbStep(-1);
+    return;
+  }
+  if (e.key === 'Escape') {
+    if (document.getElementById('edit-modal')?.classList.contains('open')) closeEditModal();
+    else if (document.getElementById('add-modal')?.classList.contains('open')) closeAddModal();
+  }
+});
+
+
+function switchLocation(locId) {
+  if (locId === currentLocId) return;
+  currentLocId = locId;
+  currentLoc = LOCATIONS[locId];
+
+  // Update nav buttons
+  document.querySelectorAll('.loc-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.loc === locId);
+  });
+
+  // Update header
+  document.getElementById('header-coords').textContent = currentLoc.coordLabel;
+
+  // Update tide label
+  document.getElementById('tide-station-label').textContent =
+    `Tide — ${currentLoc.name} (Station ${currentLoc.tideStation} ${currentLoc.tideLabel})`;
+
+  // Update air temp location label
+  document.getElementById('air-temp-location').textContent = currentLoc.airTempLabel;
+
+  // Update photo gallery
+  renderPhotoGallery(locId); // async, non-blocking
+
+  // Update Windy iframe
+  const iframe = document.getElementById('windy-iframe');
+  const { lat, lon, windyZoom } = currentLoc;
+  iframe.src = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&detailLat=${lat}&detailLon=${lon}&width=650&height=450&zoom=${windyZoom}&level=surface&overlay=waves&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=true&metricWind=mph&metricTemp=%C2%B0F&radarRange=-1`;
+
+  const cached = dataCache[locId];
+  if (cached) {
+    // Instant render from cache — no loading spinners
+    renderAll(cached);
+    document.getElementById('updated-time').textContent =
+      `Updated ${new Date(cached.fetchedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
+    document.getElementById('overall-badge').className = 'conditions-badge conditions-fair';
+    setOverallConditions(cached.marine, cached.weather);
+    // Silently refresh in background if stale (>15 min)
+    if (Date.now() - cached.fetchedAt > 15 * 60 * 1000) loadAll();
+  } else {
+    // Not yet cached — show loading state and fetch
+    document.getElementById('updated-time').textContent = 'Fetching live data…';
+    document.getElementById('overall-badge').textContent = '—';
+    document.getElementById('overall-badge').className = 'conditions-badge conditions-fair';
+    document.getElementById('air-temp-header').textContent = 'Air: —°F';
+    document.getElementById('water-temp').textContent = '—°F';
+    document.getElementById('water-temp-note').textContent = 'Oregon coast average 48–55°F year-round';
+    document.getElementById('air-temp-card').textContent = '—°F';
+    document.getElementById('wind-display').innerHTML = '<div class="loading"><div class="spinner"></div>Loading…</div>';
+    document.getElementById('buoy-display').innerHTML = '<div class="loading"><div class="spinner"></div>Loading NOAA buoy…</div>';
+    document.getElementById('tide-direction-wrap').innerHTML = '';
+    document.getElementById('tide-stats').innerHTML = `
+      <div class="tide-stat"><div class="tide-stat-label">Current</div><div class="tide-stat-value">—</div></div>
+      <div class="tide-stat"><div class="tide-stat-label">Next High</div><div class="tide-stat-value">—</div></div>
+      <div class="tide-stat"><div class="tide-stat-label">Next Low</div><div class="tide-stat-value">—</div></div>
+    `;
+    ['primary-swell','secondary-swell'].forEach((id, i) => {
+      const ranks = ['Primary swell','Secondary swell'];
+      document.getElementById(id).innerHTML = `<div class="swell-rank">${ranks[i]}</div><div class="loading"><div class="spinner"></div>Loading…</div>`;
+    });
+    loadAll();
+  }
+}
+
+function dirToCardinal(deg) {
+  if (deg === null || deg === undefined || isNaN(deg)) return '—';
+  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+  return dirs[Math.round(deg / 22.5) % 16];
+}
+
+function mToFt(m) { return (m * 3.28084).toFixed(1); }
+function msToKnots(ms) { return (ms * 1.94384).toFixed(0); }
+function msToMph(ms) { return (ms * 2.23694).toFixed(0); }
+function cToF(c) { return ((c * 9/5) + 32).toFixed(0); }
+function metersToFeetLabel(m) { return `${mToFt(m)} ft`; }
+
+function arrowSVG(deg, color) {
+  return `<svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+    <g transform="rotate(${deg},14,14)">
+      <polygon points="14,4 18,20 14,17 10,20" fill="${color}" opacity="0.8"/>
+    </g>
+  </svg>`;
+}
+
+function windCompassSVG(deg) {
+  return `<svg viewBox="0 0 70 70" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="35" cy="35" r="32" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="1"/>
+    <text x="35" y="10" text-anchor="middle" fill="#718096" font-size="8" font-family="DM Sans,Helvetica,sans-serif">N</text>
+    <text x="35" y="65" text-anchor="middle" fill="#718096" font-size="8" font-family="DM Sans,Helvetica,sans-serif">S</text>
+    <text x="8" y="38" text-anchor="middle" fill="#718096" font-size="8" font-family="DM Sans,Helvetica,sans-serif">W</text>
+    <text x="63" y="38" text-anchor="middle" fill="#718096" font-size="8" font-family="DM Sans,Helvetica,sans-serif">E</text>
+    <g transform="rotate(${deg},35,35)">
+      <polygon points="35,12 39,38 35,33 31,38" fill="#8ba8be"/>
+      <polygon points="35,58 39,32 35,37 31,32" fill="rgba(0,0,0,0.15)"/>
+    </g>
+  </svg>`;
+}
+
+// ─── Data cache: keyed by locId ────────────────────────────────────────────
+const dataCache = {};
+// Tracks in-flight fetch promises per locId so we never double-fetch
+const fetchInFlight = {};
+
+async function fetchOpenMeteoMarine(loc) {
+  const { lat, lon } = loc;
+  const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction,wind_wave_height,wind_wave_period,wind_wave_direction,sea_surface_temperature&timezone=America%2FLos_Angeles&forecast_days=2`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    throw new Error(`Marine API ${res.status}: ${txt.slice(0,100)}`);
+  }
+  const data = await res.json();
+  if (data.error) throw new Error(`Marine API error: ${data.reason}`);
+  return data;
+}
+
+async function fetchOpenMeteoWeather(loc) {
+  const { lat, lon } = loc;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Weather API ${res.status}`);
+  const data = await res.json();
+  if (data.error) throw new Error(`Weather API error: ${data.reason}`);
+  return data;
+}
+
+async function fetchNOAATides(loc) {
+  const { tideStation } = loc;
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const dateStr = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}`;
+  const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate()+1);
+  const endStr = `${tomorrow.getFullYear()}${pad(tomorrow.getMonth()+1)}${pad(tomorrow.getDate())}`;
+
+  const [predictionsRes, waterLevelRes] = await Promise.allSettled([
+    fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${dateStr}&end_date=${endStr}&station=${tideStation}&product=predictions&datum=MLLW&time_zone=lst_ldt&interval=hilo&units=english&application=web_services&format=json`),
+    fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&station=${tideStation}&product=water_level&datum=MLLW&time_zone=lst_ldt&units=english&application=web_services&format=json`)
+  ]);
+
+  let predictions = null, waterLevel = null;
+  if (predictionsRes.status === 'fulfilled' && predictionsRes.value.ok) {
+    const d = await predictionsRes.value.json();
+    if (d.predictions) predictions = d.predictions;
+  }
+  if (waterLevelRes.status === 'fulfilled' && waterLevelRes.value.ok) {
+    const d = await waterLevelRes.value.json();
+    if (d.data && d.data[0]) waterLevel = parseFloat(d.data[0].v);
+  }
+  return { predictions, waterLevel };
+}
+
+async function fetchNOAABuoy(loc) {
+  const { buoyId } = loc;
+  // NOAA's realtime txt blocks CORS — route through a public proxy
+  const proxies = [
+    `https://corsproxy.io/?url=${encodeURIComponent(`https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.txt`)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.txt`)}`,
+  ];
+  let text = null;
+  for (const url of proxies) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+      if (res.ok) { text = await res.text(); break; }
+    } catch(e) { continue; }
+  }
+  if (!text) throw new Error('Buoy fetch failed');
+  const lines = text.trim().split('\n');
+  const headers = lines[0].replace(/^#\s*/, '').split(/\s+/);
+  const latest = lines[2].split(/\s+/);
+  const get = (name) => {
+    const i = headers.indexOf(name);
+    return i >= 0 ? latest[i] : null;
+  };
+  return {
+    wvht: parseFloat(get('WVHT')),
+    dpd: parseFloat(get('DPD')),
+    mwd: parseFloat(get('MWD')),
+    wspd: parseFloat(get('WSPD')),
+    wdir: parseFloat(get('WDIR')),
+    atmp: parseFloat(get('ATMP')),
+    wtmp: parseFloat(get('WTMP')),
+  };
+}
+
+// Fetch all data for a given location and store in cache
+async function fetchLocData(locId) {
+  const loc = LOCATIONS[locId];
+  const [marineRes, weatherRes, tideRes, buoyRes] = await Promise.allSettled([
+    fetchOpenMeteoMarine(loc),
+    fetchOpenMeteoWeather(loc),
+    fetchNOAATides(loc),
+    fetchNOAABuoy(loc)
+  ]);
+  dataCache[locId] = {
+    marine:   marineRes.status  === 'fulfilled' ? marineRes.value  : null,
+    weather:  weatherRes.status === 'fulfilled' ? weatherRes.value : null,
+    tideData: tideRes.status    === 'fulfilled' ? tideRes.value    : { predictions: null, waterLevel: null },
+    buoy:     buoyRes.status    === 'fulfilled' ? buoyRes.value    : null,
+    fetchedAt: Date.now(),
+  };
+  if (marineRes.status  === 'rejected') console.error(`[Marine ${locId}]`,  marineRes.reason);
+  if (weatherRes.status === 'rejected') console.error(`[Weather ${locId}]`, weatherRes.reason);
+  if (tideRes.status    === 'rejected') console.error(`[Tides ${locId}]`,   tideRes.reason);
+  if (buoyRes.status    === 'rejected') console.error(`[Buoy ${locId}]`,    buoyRes.reason);
+  return dataCache[locId];
+}
+
+// Returns cached data immediately if fresh, otherwise awaits a fetch
+async function getLocData(locId) {
+  const CACHE_TTL = 30 * 60 * 1000; // 30 min
+  const cached = dataCache[locId];
+  if (cached && (Date.now() - cached.fetchedAt) < CACHE_TTL) return cached;
+  // Deduplicate: if already in flight, wait for that promise
+  if (!fetchInFlight[locId]) {
+    fetchInFlight[locId] = fetchLocData(locId).finally(() => { delete fetchInFlight[locId]; });
+  }
+  return fetchInFlight[locId];
+}
+
+// Prefetch all locations in the background (non-blocking)
+function prefetchAllLocations() {
+  Object.keys(LOCATIONS).forEach(locId => {
+    if (!dataCache[locId] && !fetchInFlight[locId]) {
+      getLocData(locId).catch(() => {}); // silent — errors logged inside fetchLocData
+    }
+  });
+}
+
+function renderSwellCards(marine) {
+  const now = new Date();
+  const hours = marine.hourly.time;
+  let idx = 0;
+  for (let i = 0; i < hours.length; i++) {
+    if (new Date(hours[i]) <= now) idx = i;
+    else break;
+  }
+
+  const swA = {
+    height: parseFloat(marine.hourly.swell_wave_height?.[idx]) || 0,
+    period: parseFloat(marine.hourly.swell_wave_period?.[idx]) || null,
+    dir:    parseFloat(marine.hourly.swell_wave_direction?.[idx]),
+    label:  'Ground swell'
+  };
+  const swB = {
+    height: parseFloat(marine.hourly.wind_wave_height?.[idx]) || 0,
+    period: parseFloat(marine.hourly.wind_wave_period?.[idx]) || null,
+    dir:    parseFloat(marine.hourly.wind_wave_direction?.[idx]),
+    label:  'Wind swell'
+  };
+
+  const [primary, secondary] = swA.height >= swB.height ? [swA, swB] : [swB, swA];
+
+  const swells = [
+    { rank: 'Primary swell',   sub: primary.label,   height: primary.height,   period: primary.period,   dir: primary.dir,   el: 'primary-swell',   color: '#8ba8be' },
+    { rank: 'Secondary swell', sub: secondary.label, height: secondary.height, period: secondary.period, dir: secondary.dir, el: 'secondary-swell', color: '#a8be94' },
+  ];
+
+  swells.forEach(s => {
+    const el = document.getElementById(s.el);
+    const h = s.height && !isNaN(s.height) && s.height > 0 ? s.height : null;
+    const p = s.period && !isNaN(s.period) ? s.period : null;
+    const d = s.dir && !isNaN(s.dir) ? s.dir : null;
+
+    el.innerHTML = `
+      <div class="swell-rank">${s.rank}</div>
+      <div class="swell-height">
+        ${h !== null ? metersToFeetLabel(h) : '<span style="font-size:1.4rem;color:var(--stone)">—</span>'}
+      </div>
+      <div class="swell-stats" style="align-items:baseline;">
+        <div class="stat">
+          <div class="stat-label">Period</div>
+          <div class="stat-value">${p !== null ? p.toFixed(0) + 's' : '—'}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Direction</div>
+          <div class="stat-value" style="display:flex;align-items:baseline;gap:4px;">
+            <span style="display:inline-flex;align-items:center;">${d !== null ? arrowSVG(d, s.color) : ''}</span>
+            <span>${d !== null ? dirToCardinal(d) : '—'}</span>
+          </div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Degrees</div>
+          <div class="stat-value">${d !== null ? Math.round(d) + '°' : '—'}</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--stone);opacity:0.6;margin-top:0.6rem;font-weight:400;">${s.sub}</div>
+    `;
+  });
+}
+
+function renderSwellChart(marine) {
+  const now = new Date();
+  const hours = marine.hourly.time;
+
+  let startIdx = 0;
+  for (let i = 0; i < hours.length; i++) {
+    if (new Date(hours[i]) <= now) startIdx = i;
+    else break;
+  }
+
+  const labels = [];
+  const primary = [], secondary = [];
+
+  for (let i = startIdx; i < Math.min(startIdx + 13, hours.length); i++) {
+    const t = new Date(hours[i]);
+    labels.push(t.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }));
+    const sw = marine.hourly.swell_wave_height?.[i];
+    const ww = marine.hourly.wind_wave_height?.[i];
+    const tot = marine.hourly.wave_height?.[i];
+    const swV = parseFloat(sw) || 0;
+    const wwV = parseFloat(ww) || 0;
+    const totV = parseFloat(tot) || 0;
+    primary.push(parseFloat(mToFt(Math.max(swV, wwV))));
+    secondary.push(parseFloat(mToFt(Math.min(swV, wwV))));
+    const tert = Math.max(0, totV - swV - wwV);
+
+  }
+
+  const canvas = document.getElementById('swellChart');
+
+  if (swellChart) { swellChart.destroy(); swellChart = null; }
+
+  swellChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Primary',
+          data: primary,
+          borderColor: '#8ba8be',
+          backgroundColor: 'rgba(139,168,190,0.08)',
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: '#8ba8be',
+          tension: 0.4,
+          fill: true,
+        },
+        {
+          label: 'Secondary',
+          data: secondary,
+          borderColor: '#a8be94',
+          backgroundColor: 'rgba(168,190,148,0.06)',
+          borderWidth: 2,
+          pointRadius: 3,
+          pointBackgroundColor: '#a8be94',
+          tension: 0.4,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y !== null ? ctx.parsed.y.toFixed(1) + ' ft' : '—'}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(0,0,0,0.04)' },
+          ticks: { color: '#718096', font: { size: 11, family: 'DM Sans, Helvetica, sans-serif' } }
+        },
+        y: {
+          grid: { color: 'rgba(0,0,0,0.04)' },
+          ticks: {
+            color: '#718096',
+            font: { size: 11, family: 'DM Sans, Helvetica, sans-serif' },
+            callback: v => v + ' ft'
+          },
+          beginAtZero: true,
+        }
+      }
+    }
+  });
+}
+
+function renderTides(tideData, marine) {
+  const canvas = document.getElementById('tideCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width = canvas.offsetWidth;
+  const H = 90;
+  canvas.height = H;
+  ctx.clearRect(0, 0, W, H);
+
+  const { predictions, waterLevel } = tideData;
+  const now = new Date();
+
+  let nextHigh = null, nextLow = null;
+
+  if (predictions && predictions.length > 0) {
+    const allPreds = predictions.map(p => ({
+      time: new Date(p.t.replace(' ', 'T')),
+      val: parseFloat(p.v),
+      type: p.type
+    })).filter(p => !isNaN(p.val));
+
+    for (const p of allPreds) {
+      if (p.time > now) {
+        if (!nextHigh && p.type === 'H') nextHigh = p;
+        if (!nextLow && p.type === 'L') nextLow = p;
+      }
+    }
+
+    const times = allPreds.map(p => p.time.getTime());
+    const minT = Math.min(...times);
+    const maxT = Math.max(...times);
+    const vals = allPreds.map(p => p.val);
+    const minV = Math.min(...vals);
+    const maxV = Math.max(...vals);
+    const range = maxV - minV || 1;
+
+    const pts = allPreds.map((p, i) => ({
+      x: ((times[i] - minT) / (maxT - minT)) * (W - 40) + 20,
+      y: H - 16 - ((p.val - minV) / range) * (H - 36)
+    }));
+
+    const nowX = ((now.getTime() - minT) / (maxT - minT)) * (W - 40) + 20;
+    const nowY = waterLevel !== null
+      ? H - 16 - ((waterLevel - minV) / range) * (H - 36)
+      : H / 2;
+
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, H - 8);
+    ctx.lineTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) {
+      const mx = (pts[i-1].x + pts[i].x) / 2;
+      ctx.bezierCurveTo(mx, pts[i-1].y, mx, pts[i].y, pts[i].x, pts[i].y);
+    }
+    ctx.lineTo(pts[pts.length-1].x, H - 8);
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(197,212,224,0.2)';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) {
+      const mx = (pts[i-1].x + pts[i].x) / 2;
+      ctx.bezierCurveTo(mx, pts[i-1].y, mx, pts[i].y, pts[i].x, pts[i].y);
+    }
+    ctx.strokeStyle = 'rgba(139,168,190,0.8)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    if (nowX > 20 && nowX < W - 20) {
+      ctx.beginPath();
+      ctx.arc(nowX, nowY, 5, 0, Math.PI * 2);
+      ctx.fillStyle = '#8ba8be';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(nowX, nowY, 5, 0, Math.PI * 2);
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = '#718096';
+      ctx.font = '10px DM Sans, Helvetica, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('now', nowX, nowY - 10);
+    }
+
+    ctx.fillStyle = '#718096';
+    ctx.font = '10px DM Sans, Helvetica, sans-serif';
+    pts.forEach((p, i) => {
+      const type = allPreds[i].type;
+      ctx.textAlign = 'center';
+      const labelY = type === 'H' ? p.y - 10 : p.y + 16;
+      ctx.fillText(`${type} ${parseFloat(allPreds[i].val).toFixed(1)}'`, p.x, labelY);
+    });
+  } else {
+    ctx.beginPath();
+    for (let x = 0; x < W; x++) {
+      const y = H/2 + Math.sin((x/W) * Math.PI * 2) * 20;
+      x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = 'rgba(139,168,190,0.5)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  const isIncoming = nextHigh && nextLow ? nextHigh.time < nextLow.time : null;
+  const dirWrap = document.getElementById('tide-direction-wrap');
+  if (isIncoming !== null) {
+    dirWrap.innerHTML = `<div class="tide-direction-badge ${isIncoming ? 'incoming' : 'outgoing'}">
+      ${isIncoming ? '↑ Incoming' : '↓ Outgoing'}
+    </div>`;
+  }
+
+  const statsEl = document.getElementById('tide-stats');
+  const fmt = (t) => t ? t.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) : '—';
+  statsEl.innerHTML = `
+    <div class="tide-stat">
+      <div class="tide-stat-label">Current</div>
+      <div class="tide-stat-value">${waterLevel !== null ? waterLevel.toFixed(1) + ' ft' : '—'}</div>
+      <div class="tide-stat-sub">MLLW</div>
+    </div>
+    <div class="tide-stat">
+      <div class="tide-stat-label">Next High</div>
+      <div class="tide-stat-value">${nextHigh ? nextHigh.val.toFixed(1) + ' ft' : '—'}</div>
+      <div class="tide-stat-sub">${fmt(nextHigh?.time)}</div>
+    </div>
+    <div class="tide-stat">
+      <div class="tide-stat-label">Next Low</div>
+      <div class="tide-stat-value">${nextLow ? nextLow.val.toFixed(1) + ' ft' : '—'}</div>
+      <div class="tide-stat-sub">${fmt(nextLow?.time)}</div>
+    </div>
+  `;
+}
+
+function renderWind(weather, buoy) {
+  const windEl = document.getElementById('wind-display');
+  const wspd = weather?.current?.wind_speed_10m;
+  const wdir = weather?.current?.wind_direction_10m;
+  const wgust = weather?.current?.wind_gusts_10m;
+
+  if (wspd !== undefined) {
+    windEl.innerHTML = `
+      <div class="wind-compass">${windCompassSVG(wdir || 0)}</div>
+      <div>
+        <div class="wind-number">${Math.round(wspd)}</div>
+        <div style="font-size:12px; color:var(--stone); font-weight:300; margin-top:2px;">mph ${dirToCardinal(wdir)}</div>
+        ${wgust ? `<div class="wind-details">Gusts ${Math.round(wgust)} mph</div>` : ''}
+      </div>
+    `;
+  } else {
+    windEl.innerHTML = `<div class="error-text">Wind data unavailable</div>`;
+  }
+}
+
+function renderBuoy(buoy) {
+  const el = document.getElementById('buoy-display');
+  const { buoyId, buoyLabel } = currentLoc;
+  if (!buoy || isNaN(buoy.wvht)) {
+    el.innerHTML = `<div class="error-text">Buoy ${buoyId} data unavailable</div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="buoy-grid">
+      <div class="buoy-stat">
+        <div class="buoy-stat-label">Wave Ht</div>
+        <div class="buoy-stat-value">${!isNaN(buoy.wvht) ? mToFt(buoy.wvht) + ' ft' : '—'}</div>
+      </div>
+      <div class="buoy-stat">
+        <div class="buoy-stat-label">Dom. Period</div>
+        <div class="buoy-stat-value">${!isNaN(buoy.dpd) ? buoy.dpd.toFixed(0) + 's' : '—'}</div>
+      </div>
+      <div class="buoy-stat">
+        <div class="buoy-stat-label">Swell Dir</div>
+        <div class="buoy-stat-value">${!isNaN(buoy.mwd) ? dirToCardinal(buoy.mwd) : '—'}</div>
+      </div>
+      <div class="buoy-stat">
+        <div class="buoy-stat-label">Wind</div>
+        <div class="buoy-stat-value">${!isNaN(buoy.wspd) ? msToKnots(buoy.wspd) + ' kts' : '—'}</div>
+      </div>
+    </div>
+    <div class="buoy-name">NOAA Buoy ${buoyId} — ${buoyLabel}</div>
+  `;
+}
+
+function renderTemps(weather, buoy, marine) {
+  const airC = weather?.current?.temperature_2m;
+  if (airC !== undefined) {
+    document.getElementById('air-temp-card').textContent = `${Math.round(airC)}°F`;
+    document.getElementById('air-temp-header').textContent = `Air: ${Math.round(airC)}°F`;
+  }
+
+  let wt = null;
+  if (buoy && !isNaN(buoy.wtmp) && buoy.wtmp > 0) {
+    wt = cToF(buoy.wtmp);
+  } else {
+    const now = new Date();
+    const hours = marine?.hourly?.time;
+    if (hours && marine.hourly.sea_surface_temperature) {
+      let idx = 0;
+      for (let i = 0; i < hours.length; i++) {
+        if (new Date(hours[i]) <= now) idx = i;
+        else break;
+      }
+      const sst = marine.hourly.sea_surface_temperature[idx];
+      if (sst !== null) wt = Math.round((sst * 9/5) + 32);
+    }
+  }
+
+  if (wt !== null) {
+    document.getElementById('water-temp').textContent = `${wt}°F`;
+    document.getElementById('water-temp-note').textContent =
+      parseFloat(wt) < 50 ? 'Cold — 5/4 with boots recommended' :
+      parseFloat(wt) < 54 ? 'Cool — 4/3 hooded + boots' :
+      '4/3 territory — boots recommended';
+  }
+}
+
+function setOverallConditions(marine, weather) {
+  const badge = document.getElementById('overall-badge');
+  const now = new Date();
+  const hours = marine?.hourly?.time;
+  if (!hours) return;
+
+  let idx = 0;
+  for (let i = 0; i < hours.length; i++) {
+    if (new Date(hours[i]) <= now) idx = i;
+    else break;
+  }
+  const wh = marine.hourly.swell_wave_height?.[idx];
+  const wp = marine.hourly.swell_wave_period?.[idx];
+  const wind = weather?.current?.wind_speed_10m;
+
+  if (!wh) return;
+  const ftH = wh * 3.28084;
+  let label = 'Fair', cls = 'conditions-fair';
+
+  if (ftH >= 2 && ftH <= 8 && wp >= 10 && wind < 15) { label = 'Good'; cls = 'conditions-good'; }
+  else if (ftH > 8 || wind > 20) { label = 'Heavy'; cls = 'conditions-poor'; }
+
+  badge.textContent = label;
+  badge.className = `conditions-badge ${cls}`;
+}
+
+function renderAll({ marine, weather, tideData, buoy }) {
+  if (marine) {
+    renderSwellCards(marine);
+    renderSwellChart(marine);
+  } else {
+    ['primary-swell','secondary-swell'].forEach((id, i) => {
+      const ranks = ['Primary swell','Secondary swell'];
+      document.getElementById(id).innerHTML = `<div class="swell-rank">${ranks[i]}</div><div style="font-size:12px;color:#c0392b;margin-top:8px;">Data unavailable</div>`;
+    });
+    const canvas = document.getElementById('swellChart');
+    const ctx = canvas.getContext('2d');
+    canvas.width = canvas.offsetWidth; canvas.height = 140;
+    ctx.font = '13px DM Sans, Helvetica, sans-serif';
+    ctx.fillStyle = '#718096';
+    ctx.fillText('Marine data unavailable', 16, 50);
+  }
+  renderTides(tideData, marine);
+  if (weather || buoy) renderWind(weather, buoy);
+  renderBuoy(buoy);
+  renderTemps(weather, buoy, marine);
+  if (marine && weather) setOverallConditions(marine, weather);
+}
+
+async function loadAll() {
+  const locId = currentLocId;
+  const cached = dataCache[locId];
+
+  // If we have cached data, render it immediately — no loading state shown
+  if (cached) {
+    renderAll(cached);
+    document.getElementById('updated-time').textContent =
+      `Updated ${new Date(cached.fetchedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
+  } else {
+    document.getElementById('updated-time').textContent = 'Fetching live data…';
+  }
+
+  // Always fetch fresh data in the background; re-render when done
+  try {
+    const fresh = await fetchLocData(locId);
+    // Only update the UI if the user hasn't switched locations while we were fetching
+    if (currentLocId === locId) {
+      renderAll(fresh);
+      document.getElementById('updated-time').textContent =
+        `Last updated ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
+    }
+  } catch(e) {
+    console.error('[loadAll error]', e);
+  }
+}
+
+async function fetchNavSwells() {
+  const now = new Date();
+  const locIds = Object.keys(LOCATIONS);
+
+  await Promise.allSettled(locIds.map(async (locId) => {
+    const loc = LOCATIONS[locId];
+    const el = document.getElementById(`nav-swell-${locId}`);
+    if (!el) return;
+    try {
+      const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${loc.lat}&longitude=${loc.lon}&hourly=swell_wave_height,wind_wave_height&timezone=America%2FLos_Angeles&forecast_days=1`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('failed');
+      const data = await res.json();
+
+      const hours = data.hourly.time;
+      let idx = 0;
+      for (let i = 0; i < hours.length; i++) {
+        if (new Date(hours[i]) <= now) idx = i;
+        else break;
+      }
+
+      const swellH = parseFloat(data.hourly.swell_wave_height?.[idx]) || 0;
+      const windH  = parseFloat(data.hourly.wind_wave_height?.[idx])  || 0;
+      const primaryM = Math.max(swellH, windH);
+      const ft = (primaryM * 3.28084).toFixed(1);
+
+      el.classList.remove('loading-swell');
+      el.innerHTML = `${ft}<em>ft</em>`;
+    } catch(e) {
+      el.innerHTML = '—';
+    }
+  }));
+}
+
+// ─── Add Location Modal ────────────────────────────────────────────────────
+let searchTimeout = null;
+let tideResolveTimeout = null;
+let resolvedTideStation = null;
+let resolvedTideLabel = null;
+
+function openAddModal() {
+  document.getElementById('add-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Reset form
+  ['place-search','loc-name','loc-subtitle','loc-lat','loc-lon','loc-tide-station'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('loc-buoy').value = '46029';
+  document.getElementById('search-results').classList.remove('open');
+  document.getElementById('tide-station-status').textContent = '';
+  document.getElementById('tide-station-status').className = 'tide-station-status';
+  document.getElementById('add-loc-btn').disabled = true;
+  resolvedTideStation = null;
+  resolvedTideLabel = null;
+  setTimeout(() => document.getElementById('place-search').focus(), 100);
+}
+
+function closeAddModal() {
+  document.getElementById('add-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('add-modal')) closeAddModal();
+}
+
+// Geocoding via Open-Meteo (free, no key)
+async function geocodePlace(query) {
+  const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=6&language=en&format=json`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Geocoding failed');
+  const data = await res.json();
+  return data.results || [];
+}
+
+function onPlaceSearch(val) {
+  const resultsEl = document.getElementById('search-results');
+  clearTimeout(searchTimeout);
+  if (val.trim().length < 2) { resultsEl.classList.remove('open'); return; }
+  resultsEl.innerHTML = '<div class="search-status">Searching…</div>';
+  resultsEl.classList.add('open');
+  searchTimeout = setTimeout(async () => {
+    try {
+      const results = await geocodePlace(val);
+      if (!results.length) {
+        resultsEl.innerHTML = '<div class="search-status">No results — try a nearby town or enter coordinates manually.</div>';
+        return;
+      }
+      resultsEl.innerHTML = results.map((r, i) => `
+        <div class="search-result-item" onclick="selectPlace(${i})" data-idx="${i}">
+          <strong>${r.name}</strong>
+          <span>${[r.admin1, r.admin2, r.country].filter(Boolean).join(', ')}</span>
+        </div>
+      `).join('');
+      // Store results for selection
+      resultsEl._results = results;
+    } catch(e) {
+      resultsEl.innerHTML = '<div class="search-status">Search unavailable — enter coordinates manually.</div>';
+    }
+  }, 350);
+}
+
+function onSearchKeydown(e) {
+  if (e.key === 'Escape') { document.getElementById('search-results').classList.remove('open'); }
+}
+
+function selectPlace(idx) {
+  const resultsEl = document.getElementById('search-results');
+  const r = resultsEl._results?.[idx];
+  if (!r) return;
+
+  document.getElementById('place-search').value = r.name;
+  if (!document.getElementById('loc-name').value) {
+    document.getElementById('loc-name').value = r.name;
+  }
+  if (!document.getElementById('loc-subtitle').value) {
+    document.getElementById('loc-subtitle').value = [r.admin2 || r.admin1].filter(Boolean).join(', ') || '';
+  }
+  document.getElementById('loc-lat').value = r.latitude.toFixed(4);
+  document.getElementById('loc-lon').value = r.longitude.toFixed(4);
+  resultsEl.classList.remove('open');
+
+  resolveNearestTideStation(r.latitude, r.longitude);
+  checkFormReady();
+}
+
+// Resolve nearest NOAA tide station from coords
+async function resolveNearestTideStation(lat, lon) {
+  const statusEl = document.getElementById('tide-station-status');
+  const stationInput = document.getElementById('loc-tide-station');
+  statusEl.textContent = 'Finding nearest NOAA tide station…';
+  statusEl.className = 'tide-station-status resolving';
+  resolvedTideStation = null;
+  resolvedTideLabel = null;
+
+  try {
+    // NOAA stations API — fetch stations within ~2° box
+    const url = `https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json?type=tidepredictions&units=english`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Stations API failed');
+    const data = await res.json();
+    const stations = data.stations || [];
+
+    // Find nearest by Haversine distance
+    let nearest = null, nearestDist = Infinity;
+    stations.forEach(s => {
+      const slat = parseFloat(s.lat), slon = parseFloat(s.lng);
+      if (isNaN(slat) || isNaN(slon)) return;
+      const d = haversineKm(lat, lon, slat, slon);
+      if (d < nearestDist) { nearestDist = d; nearest = s; }
+    });
+
+    if (nearest) {
+      stationInput.value = nearest.id;
+      resolvedTideStation = nearest.id;
+      resolvedTideLabel = nearest.name;
+      statusEl.textContent = `✓ ${nearest.name} — ${Math.round(nearestDist)} km away`;
+      statusEl.className = 'tide-station-status found';
+    } else {
+      throw new Error('No stations found');
+    }
+  } catch(e) {
+    statusEl.textContent = 'Could not auto-resolve — enter station ID manually (tidesandcurrents.noaa.gov)';
+    statusEl.className = 'tide-station-status error';
+  }
+  checkFormReady();
+}
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLon = (lon2-lon1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function onCoordsChanged() {
+  const lat = parseFloat(document.getElementById('loc-lat').value);
+  const lon = parseFloat(document.getElementById('loc-lon').value);
+  if (!isNaN(lat) && !isNaN(lon)) {
+    clearTimeout(tideResolveTimeout);
+    tideResolveTimeout = setTimeout(() => resolveNearestTideStation(lat, lon), 600);
+  }
+  checkFormReady();
+}
+
+function checkFormReady() {
+  const name = document.getElementById('loc-name').value.trim();
+  const lat  = document.getElementById('loc-lat').value.trim();
+  const lon  = document.getElementById('loc-lon').value.trim();
+  const tide = document.getElementById('loc-tide-station').value.trim() || resolvedTideStation;
+  document.getElementById('add-loc-btn').disabled = !(name && lat && lon && tide);
+}
+
+// Wire up name/tide inputs to re-check readiness
+document.addEventListener('DOMContentLoaded', () => {
+  ['loc-name','loc-tide-station'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', checkFormReady);
+  });
+});
+
+function slugify(str) {
+  return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g,'');
+}
+
+function addNavButton(loc) {
+  const nav = document.getElementById('loc-nav');
+  const actionsDiv = nav.querySelector('.loc-nav-actions');
+  const btn = document.createElement('button');
+  btn.className = 'loc-btn';
+  btn.dataset.loc = loc.id;
+  btn.setAttribute('onclick', `switchLocation('${loc.id}')`);
+  btn.innerHTML = `
+    <span class="loc-btn-remove" onclick="removeLocation(event,'${loc.id}')" title="Remove">✕</span>
+    <span class="loc-btn-swell loading-swell" id="nav-swell-${loc.id}">—</span>
+    <span class="loc-btn-name">${loc.name}</span>
+    <span class="loc-btn-sub">${loc.subtitle}</span>
+  `;
+  nav.insertBefore(btn, actionsDiv);
+  return btn;
+}
+
+async function addLocation() {
+  const name     = document.getElementById('loc-name').value.trim();
+  const subtitle = document.getElementById('loc-subtitle').value.trim();
+  const lat      = parseFloat(document.getElementById('loc-lat').value);
+  const lon      = parseFloat(document.getElementById('loc-lon').value);
+  const tideStation = document.getElementById('loc-tide-station').value.trim() || resolvedTideStation;
+  const tideLabel   = resolvedTideLabel || tideStation;
+  const buoyId      = document.getElementById('loc-buoy').value.trim() || '46029';
+
+  if (!name || isNaN(lat) || isNaN(lon) || !tideStation) return;
+
+  const id = slugify(name) + '-' + Date.now().toString(36);
+  const loc = {
+    id, name, subtitle,
+    titleHTML: subtitle ? `${name} <em>/ ${subtitle}</em>` : name,
+    lat, lon,
+    coordLabel: `${lat.toFixed(2)}°N ${Math.abs(lon).toFixed(2)}°W`,
+    tideStation,
+    tideLabel,
+    buoyId,
+    buoyLabel: `Buoy ${buoyId}`,
+    notes: '',
+    windyZoom: 11,
+    airTempLabel: subtitle || name,
+    custom: true,
+  };
+
+  LOCATIONS[id] = loc;
+  saveCustomLocations();
+  addNavButton(loc);
+  closeAddModal();
+
+  // Fetch swell for nav pill
+  try {
+    const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=swell_wave_height,wind_wave_height&timezone=America%2FLos_Angeles&forecast_days=1`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const now = new Date();
+    const hours = data.hourly.time;
+    let idx = 0;
+    for (let i = 0; i < hours.length; i++) { if (new Date(hours[i]) <= now) idx = i; else break; }
+    const swellH = parseFloat(data.hourly.swell_wave_height?.[idx]) || 0;
+    const windH  = parseFloat(data.hourly.wind_wave_height?.[idx]) || 0;
+    const ft = (Math.max(swellH, windH) * 3.28084).toFixed(1);
+    const el = document.getElementById(`nav-swell-${id}`);
+    if (el) { el.classList.remove('loading-swell'); el.innerHTML = `${ft}<em>ft</em>`; }
+  } catch(e) {
+    const el = document.getElementById(`nav-swell-${id}`);
+    if (el) el.innerHTML = '—';
+  }
+
+  // Switch to the new location
+  switchLocation(id);
+}
+
+function toggleEditMode() {
+  const nav = document.getElementById('loc-nav');
+  const btn = document.getElementById('loc-edit-toggle');
+  const isEditing = nav.classList.toggle('edit-mode');
+  btn.classList.toggle('active', isEditing);
+  btn.title = isEditing ? 'Done editing' : 'Edit spots';
+}
+
+function removeLocation(e, locId) {
+  e.stopPropagation();
+  // Don't remove if it's currently active — switch away first
+  if (currentLocId === locId) {
+    const ids = Object.keys(LOCATIONS);
+    const fallback = ids.find(id => id !== locId) || ids[0];
+    switchLocation(fallback);
+  }
+  delete LOCATIONS[locId];
+  delete dataCache[locId];
+  const btn = document.querySelector(`.loc-btn[data-loc="${locId}"]`);
+  if (btn) btn.remove();
+  saveCustomLocations();
+
+  // Auto-exit edit mode if only one spot remains
+  if (Object.keys(LOCATIONS).length <= 1) {
+    const nav = document.getElementById('loc-nav');
+    const toggleBtn = document.getElementById('loc-edit-toggle');
+    nav.classList.remove('edit-mode');
+    toggleBtn?.classList.remove('active');
+  }
+}
+
+// Close search dropdown on outside click
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.search-wrap')) {
+    document.getElementById('search-results')?.classList.remove('open');
+  }
+});
+
+// ─── Custom location persistence ──────────────────────────────────────────
+const CUSTOM_LOCS_KEY = 'surf-custom-locations';
+
+function saveCustomLocations() {
+  const custom = Object.values(LOCATIONS).filter(l => l.custom);
+  try { localStorage.setItem(CUSTOM_LOCS_KEY, JSON.stringify(custom)); } catch(e) {}
+}
+
+function loadCustomLocations() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CUSTOM_LOCS_KEY) || '[]');
+    saved.forEach(loc => {
+      if (!LOCATIONS[loc.id]) {
+        LOCATIONS[loc.id] = loc;
+        addNavButton(loc);
+      }
+    });
+  } catch(e) {}
+}
+
+// ─── Section collapse/expand ───────────────────────────────────────────────
+function toggleSection(id) {
+  const body = document.getElementById(`section-${id}`);
+  const label = body?.previousElementSibling;
+  if (!body) return;
+  const isCollapsed = body.classList.toggle('collapsed');
+  if (label) label.classList.toggle('collapsed', isCollapsed);
+}
+
+// Init
+loadCustomLocations(); // restore any saved custom spots
+fetchNavSwells();
+renderPhotoGallery('cannon-beach'); // render photos for default location
+loadAll(); // loads Cannon Beach immediately
+prefetchAllLocations(); // fetches all other locations in background
+// Every 30 min: refresh all cached locations silently
+setInterval(() => {
+  Object.keys(LOCATIONS).forEach(locId => {
+    fetchLocData(locId).then(fresh => {
+      // If user is on this location, re-render with fresh data
+      if (currentLocId === locId) {
+        renderAll(fresh);
+        document.getElementById('updated-time').textContent =
+          `Last updated ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
+      }
+    }).catch(() => {});
+  });
+}, 30 * 60 * 1000);
+</script>
+</body>
+</html>
