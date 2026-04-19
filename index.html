@@ -1858,8 +1858,8 @@
 </div>
 
 
-<!-- Hidden photo upload input -->
-<input type="file" id="photo-upload-input" accept="image/*" multiple style="display:none" onchange="handlePhotoUpload(event)">
+<!-- Hidden photo upload input — accepts all image types including iOS HEIC/HEIF -->
+<input type="file" id="photo-upload-input" accept="image/*,image/heic,image/heif,.heic,.heif" multiple style="display:none" onchange="handlePhotoUpload(event)">
 
 <!-- Lightbox -->
 <div class="lightbox" id="lightbox" onclick="lbHandleBackdropClick(event)">
@@ -1974,9 +1974,12 @@ function loadUserPhotos() {
 }
 
 function saveUserPhotos(allPhotos) {
-  try { localStorage.setItem(USER_PHOTOS_KEY, JSON.stringify(allPhotos)); } catch(e) {
-    // Storage quota exceeded — warn gently
+  try {
+    localStorage.setItem(USER_PHOTOS_KEY, JSON.stringify(allPhotos));
+    return true;
+  } catch(e) {
     console.warn('Photo storage full. Remove some photos to free space.');
+    return false;
   }
 }
 
@@ -1997,26 +2000,85 @@ function handlePhotoUpload(event) {
   const locId = event.target.dataset.locId || currentLocId;
   if (!files.length) return;
 
-  const allPhotos = loadUserPhotos();
-  if (!allPhotos[locId]) allPhotos[locId] = [];
+  // Process all files in parallel — each renders as soon as it's ready
+  files.forEach(file => processSinglePhoto(file, locId));
+}
 
-  let processed = 0;
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target.result;
-      allPhotos[locId].push({ dataUrl, name: file.name.replace(/\.[^.]+$/, '') });
-      processed++;
-      if (processed === files.length) {
-        saveUserPhotos(allPhotos);
-        // Re-render only if still on same location
-        if (currentLocId === locId) {
-          renderUserPhotoTiles(locId);
+function processSinglePhoto(file, locId) {
+  return new Promise(resolve => {
+    const name = file.name.replace(/\.[^.]+$/, '');
+
+    function compressAndSave(sourceUrl, isObjectUrl) {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          // Downscale to max 1200px on longest side — keeps files ~150–300KB as JPEG
+          const MAX = 1200;
+          let w = img.naturalWidth  || img.width  || 800;
+          let h = img.naturalHeight || img.height || 600;
+          if (w > MAX || h > MAX) {
+            if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+            else       { w = Math.round(w * MAX / h); h = MAX; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          if (isObjectUrl) URL.revokeObjectURL(sourceUrl);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          saveAndRender(dataUrl);
+        } catch (err) {
+          if (isObjectUrl) URL.revokeObjectURL(sourceUrl);
+          // Canvas failed (e.g. tainted) — try raw FileReader as last resort
+          readAsDataUrl(file, saveAndRender, () => {
+            showPhotoError('Could not read photo. Try a different image.');
+            resolve();
+          });
         }
+      };
+      img.onerror = () => {
+        if (isObjectUrl) URL.revokeObjectURL(sourceUrl);
+        readAsDataUrl(file, saveAndRender, () => {
+          showPhotoError('Could not decode photo.');
+          resolve();
+        });
+      };
+      img.src = sourceUrl;
+    }
+
+    function saveAndRender(dataUrl) {
+      const allPhotos = loadUserPhotos();
+      if (!allPhotos[locId]) allPhotos[locId] = [];
+      allPhotos[locId].push({ dataUrl, name });
+      const saved = saveUserPhotos(allPhotos);
+      if (!saved) {
+        showPhotoError('Storage full — remove some photos first.');
+      } else if (currentLocId === locId) {
+        renderUserPhotoTiles(locId);
       }
-    };
-    reader.readAsDataURL(file);
+      resolve();
+    }
+
+    // All image types go through the canvas compression path
+    const objUrl = URL.createObjectURL(file);
+    compressAndSave(objUrl, true);
   });
+}
+
+function showPhotoError(msg) {
+  const strip = document.getElementById('photo-strip');
+  if (!strip) return;
+  const err = document.createElement('div');
+  err.style.cssText = 'font-size:12px;color:#c0392b;padding:0.75rem 1rem;flex-shrink:0;background:rgba(192,57,43,0.08);border-radius:10px;align-self:center;';
+  err.textContent = msg;
+  strip.prepend(err);
+  setTimeout(() => err.remove(), 5000);
+}
+
+function readAsDataUrl(file, onSuccess, onFail) {
+  const reader = new FileReader();
+  reader.onload  = (e) => onSuccess(e.target.result);
+  reader.onerror = () => onFail();
+  reader.readAsDataURL(file);
 }
 
 function deleteUserPhoto(locId, index) {
@@ -2031,12 +2093,19 @@ function renderUserPhotoTiles(locId) {
   const strip = document.getElementById('photo-strip');
   if (!strip) return;
 
-  // Remove existing user tiles
+  // If the gallery is still loading (has skeleton tiles but no real tiles yet),
+  // defer until renderPhotoGallery finishes — it calls us at the end anyway.
+  const hasSkeletons = strip.querySelector('.photo-tile-loading');
+  const hasRealTiles = strip.querySelector('.photo-tile:not(.photo-tile-loading):not(.user-photo)');
+  const hasNoPhotoMsg = strip.querySelector('div:not(.photo-tile)');
+  if (hasSkeletons && !hasRealTiles && !hasNoPhotoMsg) return;
+
+  // Remove existing user tiles so we can re-render fresh
   strip.querySelectorAll('.user-photo').forEach(el => el.remove());
 
   const photos = getUserPhotosForLoc(locId);
+  if (!photos.length) return;
 
-  // Build user photo tiles (prepend in reverse so first uploaded = first shown)
   const fragment = document.createDocumentFragment();
 
   photos.forEach(({ dataUrl, name }, i) => {
@@ -2067,7 +2136,6 @@ function renderUserPhotoTiles(locId) {
     };
     tile.appendChild(delBtn);
 
-    // Click opens lightbox
     tile.addEventListener('click', () => {
       const allTiles = Array.from(strip.querySelectorAll('.photo-tile[data-photo-url]'));
       lbOpen(allTiles.indexOf(tile));
