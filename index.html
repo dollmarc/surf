@@ -84,6 +84,12 @@
     padding: 3rem 2rem 4rem;
   }
 
+  @media (max-width: 700px) {
+    .page {
+      padding: 1.25rem 1rem 3rem;
+    }
+  }
+
   /* Header */
   .header {
     display: flex;
@@ -94,6 +100,19 @@
     gap: 1.5rem;
     padding-bottom: 1.75rem;
     border-bottom: 1px solid var(--hairline);
+  }
+
+  @media (max-width: 700px) {
+    .header {
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.25rem;
+    }
+    .header-right {
+      align-items: flex-start !important;
+      text-align: left !important;
+    }
   }
 
   .location-pill {
@@ -127,11 +146,11 @@
   }
 
   h1 {
-    font-size: clamp(2.1rem, 5.2vw, 3.4rem);
+    font-size: clamp(1.25rem, 3vw, 1.7rem);
     font-weight: 300;
     color: var(--ink);
     letter-spacing: -0.025em;
-    line-height: 1.05;
+    line-height: 1.1;
   }
 
   h1 em {
@@ -206,6 +225,10 @@
   @media (max-width: 700px) {
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
     .grid-2-wide { grid-template-columns: 1fr !important; }
+    .card, .card-tinted { padding: 1.1rem 1.25rem; border-radius: 16px; }
+    .section-label { margin: 2rem 0 1rem; font-size: 10px; }
+    .windy-wrap { height: 280px; border-radius: 16px; }
+    .swell-chart-wrap { height: 160px; }
   }
 
   .grid-2-wide {
@@ -801,9 +824,149 @@
   .tag-hike { background: rgba(197,212,224,0.5); color: #1a4060; }
   .tag-consistent { background: rgba(200,216,192,0.5); color: #1a4020; }
   .tag-reef { background: rgba(212,204,224,0.5); color: #3a2860; }
+  .tag-custom { background: rgba(220,232,228,0.5); color: #1a4030; }
+
+  /* Tag edit popover */
+  .tag-popover {
+    position: fixed;
+    z-index: 300;
+    background: var(--white);
+    border-radius: 18px;
+    padding: 1.1rem 1.25rem 1.25rem;
+    box-shadow: 0 12px 40px rgba(45,55,72,0.18), 0 2px 8px rgba(45,55,72,0.08);
+    border: 1px solid var(--hairline-soft);
+    width: 260px;
+    animation: popover-in 0.16s ease;
+    display: none;
+  }
+  .tag-popover.open { display: block; }
+  @keyframes popover-in {
+    from { opacity: 0; transform: translateY(6px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .tag-popover-title {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--stone);
+    margin-bottom: 0.75rem;
+  }
+  .tag-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 0.75rem;
+  }
+  .tag-preset-btn {
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .tag-preset-btn:hover { opacity: 0.8; }
+  .tag-preset-btn.selected { outline: 2px solid currentColor; outline-offset: 1px; }
+  .tag-custom-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  .tag-custom-input {
+    flex: 1;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--ink);
+    background: var(--pale);
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 8px;
+    padding: 6px 10px;
+    outline: none;
+    min-width: 0;
+  }
+  .tag-custom-input:focus {
+    border-color: rgba(139,168,190,0.6);
+    box-shadow: 0 0 0 3px rgba(139,168,190,0.12);
+  }
+  .tag-popover-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+  .tag-popover-save {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--white);
+    background: var(--dusk);
+    border: none;
+    border-radius: 9px;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .tag-popover-save:hover { opacity: 0.85; }
+  .tag-popover-clear {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--stone);
+    background: var(--pale);
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 9px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .tag-popover-clear:hover { background: rgba(0,0,0,0.05); }
+
+  /* Make tag pill clickable in edit mode */
+  .loc-nav.edit-mode .loc-btn-tag {
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .loc-nav.edit-mode .loc-btn-tag:hover { opacity: 0.7; }
+  /* Show an "add tag" affordance when there's no tag in edit mode */
+  .loc-btn-tag-add {
+    display: none;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-top: 3px;
+    background: rgba(0,0,0,0.05);
+    color: var(--stone);
+    border: 1.5px dashed rgba(0,0,0,0.15);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  .loc-btn-tag-add:hover { background: rgba(0,0,0,0.09); }
+  .loc-nav.edit-mode .loc-btn-tag-add { display: inline-block; }
 
   @media (max-width: 600px) {
     .loc-btn { min-width: calc(50% - 8px); }
+    .loc-nav {
+      gap: 4px;
+      padding: 4px;
+      border-radius: 20px;
+      margin-bottom: 1.5rem;
+    }
+    .loc-btn {
+      padding: 9px 12px 10px;
+      border-radius: 14px;
+    }
+    .loc-btn-swell { font-size: 18px; }
+    .loc-btn-name { font-size: 12px; }
+    .loc-btn-sub { font-size: 9px; }
   }
 
   /* Add / edit action column in nav */
@@ -813,6 +976,17 @@
     gap: 5px;
     align-self: center;
     flex-shrink: 0;
+  }
+
+  @media (max-width: 700px) {
+    .loc-nav-actions {
+      flex-direction: row;
+      align-self: flex-end;
+      padding: 2px 0 2px 2px;
+    }
+    .loc-nav {
+      align-items: flex-end;
+    }
   }
 
   /* Add location button in nav */
@@ -904,7 +1078,6 @@
     to   { transform: rotate(0.8deg); }
   }
 
-  /* Modal overlay */
   .modal-overlay {
     display: none;
     position: fixed;
@@ -927,6 +1100,35 @@
     box-shadow: 0 20px 60px rgba(0,0,0,0.15);
     position: relative;
     animation: modal-in 0.2s ease;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  @media (max-width: 600px) {
+    .modal-overlay {
+      align-items: flex-end;
+      padding: 0;
+    }
+    .modal {
+      border-radius: 24px 24px 0 0;
+      max-height: 92vh;
+      padding: 1.5rem 1.25rem 2rem;
+      animation: modal-up 0.25s ease;
+    }
+    @keyframes modal-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .modal-actions {
+      position: sticky;
+      bottom: 0;
+      background: var(--white);
+      padding-top: 0.75rem;
+      margin-top: 1rem;
+    }
+    .field-row {
+      grid-template-columns: 1fr;
+    }
   }
 
   @keyframes modal-in {
@@ -1139,6 +1341,14 @@
     position: relative;
     box-shadow: var(--shadow-sm);
     transition: box-shadow 0.25s ease, transform 0.25s ease;
+  }
+
+  @media (max-width: 600px) {
+    .photo-tile {
+      flex: 0 0 220px;
+      width: 220px;
+      height: 280px;
+    }
   }
 
   .photo-tile:hover {
@@ -1418,28 +1628,32 @@
       <span class="loc-btn-swell loading-swell" id="nav-swell-cannon-beach">—</span>
       <span class="loc-btn-name">The Needles</span>
       <span class="loc-btn-sub">Cannon Beach</span>
-      <span class="loc-btn-tag tag-fave">Favorite</span>
+      <span class="loc-btn-tag tag-fave" id="nav-tag-cannon-beach" onclick="openTagPopover(event,'cannon-beach')">Favorite</span>
+      <button class="loc-btn-tag-add" onclick="openTagPopover(event,'cannon-beach')" style="display:none" id="nav-tag-add-cannon-beach">+ tag</button>
     </button>
     <button class="loc-btn" data-loc="indian-beach" onclick="switchLocation('indian-beach')">
       <span class="loc-btn-remove" onclick="removeLocation(event,'indian-beach')" title="Remove">✕</span>
       <span class="loc-btn-swell loading-swell" id="nav-swell-indian-beach">—</span>
       <span class="loc-btn-name">Indian Beach</span>
       <span class="loc-btn-sub">Ecola State Park</span>
-      <span class="loc-btn-tag tag-hike">NW/W swell</span>
+      <span class="loc-btn-tag tag-hike" id="nav-tag-indian-beach" onclick="openTagPopover(event,'indian-beach')">NW/W swell</span>
+      <button class="loc-btn-tag-add" onclick="openTagPopover(event,'indian-beach')" style="display:none" id="nav-tag-add-indian-beach">+ tag</button>
     </button>
     <button class="loc-btn" data-loc="short-sands" onclick="switchLocation('short-sands')">
       <span class="loc-btn-remove" onclick="removeLocation(event,'short-sands')" title="Remove">✕</span>
       <span class="loc-btn-swell loading-swell" id="nav-swell-short-sands">—</span>
       <span class="loc-btn-name">Short Sands</span>
       <span class="loc-btn-sub">Oswald West</span>
-      <span class="loc-btn-tag tag-consistent">Most consistent</span>
+      <span class="loc-btn-tag tag-consistent" id="nav-tag-short-sands" onclick="openTagPopover(event,'short-sands')">Most consistent</span>
+      <button class="loc-btn-tag-add" onclick="openTagPopover(event,'short-sands')" style="display:none" id="nav-tag-add-short-sands">+ tag</button>
     </button>
     <button class="loc-btn" data-loc="the-cove" onclick="switchLocation('the-cove')">
       <span class="loc-btn-remove" onclick="removeLocation(event,'the-cove')" title="Remove">✕</span>
       <span class="loc-btn-swell loading-swell" id="nav-swell-the-cove">—</span>
       <span class="loc-btn-name">The Cove</span>
       <span class="loc-btn-sub">Seaside</span>
-      <span class="loc-btn-tag tag-reef">Point break</span>
+      <span class="loc-btn-tag tag-reef" id="nav-tag-the-cove" onclick="openTagPopover(event,'the-cove')">Point break</span>
+      <button class="loc-btn-tag-add" onclick="openTagPopover(event,'the-cove')" style="display:none" id="nav-tag-add-the-cove">+ tag</button>
     </button>
     <div class="loc-nav-actions">
       <button class="loc-add-btn" onclick="openAddModal()" title="Add location">+</button>
@@ -1660,6 +1874,19 @@
   <div class="lightbox-caption" id="lb-caption"></div>
 </div>
 
+<!-- Tag edit popover -->
+<div class="tag-popover" id="tag-popover">
+  <div class="tag-popover-title">Edit tag</div>
+  <div class="tag-presets" id="tag-presets"></div>
+  <div class="tag-custom-row">
+    <input class="tag-custom-input" id="tag-custom-input" type="text" placeholder="Custom label…" maxlength="28">
+  </div>
+  <div class="tag-popover-actions">
+    <button class="tag-popover-clear" onclick="clearTag()">Remove</button>
+    <button class="tag-popover-save" onclick="saveTag()">Save</button>
+  </div>
+</div>
+
 <script>
 
 // ─── Location definitions ─────────────────────────────────────────────────
@@ -1677,6 +1904,7 @@ const LOCATIONS = {
     buoyId: '46029',
     buoyLabel: 'Columbia River Bar',
     notes: 'Refracts around Haystack Rock. Fickle — needs N swell + offshore + right sand.',
+    tag: 'Favorite', tagClass: 'tag-fave',
     windyZoom: 12,
     airTempLabel: 'Cannon Beach, OR',
   },
@@ -1693,6 +1921,7 @@ const LOCATIONS = {
     buoyId: '46029',
     buoyLabel: 'Columbia River Bar',
     notes: 'Works best on NW/W swell. Lighter crowds due to the hike in. Consistent beachbreak.',
+    tag: 'NW/W swell', tagClass: 'tag-hike',
     windyZoom: 12,
     airTempLabel: 'Ecola State Park, OR',
   },
@@ -1709,6 +1938,7 @@ const LOCATIONS = {
     buoyId: '46029',
     buoyLabel: 'Columbia River Bar',
     notes: 'Most consistent break on the north coast. Friendly vibe. Long hike with a longboard.',
+    tag: 'Most consistent', tagClass: 'tag-consistent',
     windyZoom: 12,
     airTempLabel: 'Manzanita, OR',
   },
@@ -1725,6 +1955,7 @@ const LOCATIONS = {
     buoyId: '46029',
     buoyLabel: 'Columbia River Bar',
     notes: 'Protected point break. Works on N swell. More sheltered from wind than open beachbreaks.',
+    tag: 'Point break', tagClass: 'tag-reef',
     windyZoom: 12,
     airTempLabel: 'Seaside, OR',
   },
@@ -3163,11 +3394,15 @@ function addNavButton(loc) {
   btn.className = 'loc-btn';
   btn.dataset.loc = loc.id;
   btn.setAttribute('onclick', `switchLocation('${loc.id}')`);
+  const tag = loc.tag;
+  const tagClass = loc.tagClass || 'tag-custom';
   btn.innerHTML = `
     <span class="loc-btn-remove" onclick="removeLocation(event,'${loc.id}')" title="Remove">✕</span>
     <span class="loc-btn-swell loading-swell" id="nav-swell-${loc.id}">—</span>
     <span class="loc-btn-name">${loc.name}</span>
     <span class="loc-btn-sub">${loc.subtitle}</span>
+    ${tag ? `<span class="loc-btn-tag ${tagClass}" id="nav-tag-${loc.id}" onclick="openTagPopover(event,'${loc.id}')">${tag}</span>` : ''}
+    <button class="loc-btn-tag-add" onclick="openTagPopover(event,'${loc.id}')" style="${tag ? 'display:none' : ''}" id="nav-tag-add-${loc.id}">+ tag</button>
   `;
   nav.insertBefore(btn, actionsDiv);
   return btn;
@@ -3259,14 +3494,190 @@ function removeLocation(e, locId) {
   }
 }
 
-// Close search dropdown on outside click
+// Close search dropdown on outside click, and exit edit mode on outside click
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.search-wrap')) {
     document.getElementById('search-results')?.classList.remove('open');
   }
+
+  const nav = document.getElementById('loc-nav');
+  if (nav.classList.contains('edit-mode')) {
+    if (!e.target.closest('.loc-nav') && !e.target.closest('.tag-popover')) {
+      const toggleBtn = document.getElementById('loc-edit-toggle');
+      nav.classList.remove('edit-mode');
+      toggleBtn?.classList.remove('active');
+      if (toggleBtn) toggleBtn.title = 'Edit spots';
+      closeTagPopover();
+    }
+  }
 });
 
-// ─── Custom location persistence ──────────────────────────────────────────
+// ─── Tag editing ──────────────────────────────────────────────────────────────
+const TAG_OVERRIDES_KEY = 'surf-tag-overrides'; // { [locId]: { tag, tagClass } | null }
+let tagPopoverLocId = null;
+let tagPopoverSelected = null; // { tag, tagClass } or null
+
+const TAG_PRESETS = [
+  { tag: 'Favorite',       tagClass: 'tag-fave' },
+  { tag: 'NW/W swell',     tagClass: 'tag-hike' },
+  { tag: 'Most consistent',tagClass: 'tag-consistent' },
+  { tag: 'Point break',    tagClass: 'tag-reef' },
+  { tag: 'Reef break',     tagClass: 'tag-reef' },
+  { tag: 'Beachbreak',     tagClass: 'tag-consistent' },
+  { tag: 'Long hike',      tagClass: 'tag-hike' },
+  { tag: 'Mellow',         tagClass: 'tag-custom' },
+  { tag: 'Advanced',       tagClass: 'tag-fave' },
+];
+
+function loadTagOverrides() {
+  try { return JSON.parse(localStorage.getItem(TAG_OVERRIDES_KEY) || '{}'); } catch(e) { return {}; }
+}
+function saveTagOverride(locId, data) {
+  const all = loadTagOverrides();
+  if (data === null) { delete all[locId]; } else { all[locId] = data; }
+  try { localStorage.setItem(TAG_OVERRIDES_KEY, JSON.stringify(all)); } catch(e) {}
+}
+
+function applyTagOverrides() {
+  const overrides = loadTagOverrides();
+  Object.entries(overrides).forEach(([locId, data]) => {
+    if (LOCATIONS[locId]) {
+      LOCATIONS[locId].tag = data ? data.tag : '';
+      LOCATIONS[locId].tagClass = data ? data.tagClass : '';
+    }
+    renderTagInNav(locId, data ? data.tag : null, data ? data.tagClass : null);
+  });
+}
+
+function renderTagInNav(locId, tag, tagClass) {
+  const tagEl = document.getElementById(`nav-tag-${locId}`);
+  const addEl = document.getElementById(`nav-tag-add-${locId}`);
+  if (tag) {
+    if (tagEl) {
+      tagEl.textContent = tag;
+      // swap classes
+      tagEl.className = `loc-btn-tag ${tagClass || 'tag-custom'}`;
+      tagEl.style.display = '';
+    } else {
+      // tag element doesn't exist yet — create it (for custom spots loaded from storage)
+      const btn = document.querySelector(`.loc-btn[data-loc="${locId}"]`);
+      if (btn) {
+        const span = document.createElement('span');
+        span.id = `nav-tag-${locId}`;
+        span.className = `loc-btn-tag ${tagClass || 'tag-custom'}`;
+        span.textContent = tag;
+        span.setAttribute('onclick', `openTagPopover(event,'${locId}')`);
+        btn.appendChild(span);
+      }
+    }
+    if (addEl) addEl.style.display = 'none';
+  } else {
+    if (tagEl) tagEl.style.display = 'none';
+    // addEl visibility is managed by CSS (.loc-nav.edit-mode .loc-btn-tag-add)
+  }
+}
+
+function openTagPopover(e, locId) {
+  e.stopPropagation();
+  // Only work in edit mode
+  const nav = document.getElementById('loc-nav');
+  if (!nav.classList.contains('edit-mode')) return;
+
+  tagPopoverLocId = locId;
+  const loc = LOCATIONS[locId];
+  const currentTag = loc?.tag || '';
+  const currentClass = loc?.tagClass || '';
+
+  // Populate presets
+  const presetsEl = document.getElementById('tag-presets');
+  presetsEl.innerHTML = '';
+  TAG_PRESETS.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = `tag-preset-btn ${p.tagClass}`;
+    if (p.tag === currentTag) btn.classList.add('selected');
+    btn.textContent = p.tag;
+    btn.onclick = () => {
+      presetsEl.querySelectorAll('.tag-preset-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('tag-custom-input').value = '';
+      tagPopoverSelected = { tag: p.tag, tagClass: p.tagClass };
+    };
+    presetsEl.appendChild(btn);
+  });
+
+  // Pre-fill custom input if current tag isn't a preset
+  const isPreset = TAG_PRESETS.some(p => p.tag === currentTag);
+  const customInput = document.getElementById('tag-custom-input');
+  customInput.value = (!isPreset && currentTag) ? currentTag : '';
+  tagPopoverSelected = currentTag ? { tag: currentTag, tagClass: currentClass } : null;
+
+  // Position popover near the clicked element
+  const popover = document.getElementById('tag-popover');
+  popover.classList.add('open');
+  const rect = e.target.getBoundingClientRect();
+  const pw = 260;
+  let left = rect.left;
+  if (left + pw > window.innerWidth - 12) left = window.innerWidth - pw - 12;
+  if (left < 8) left = 8;
+  let top = rect.bottom + 8;
+  if (top + 300 > window.innerHeight) top = rect.top - 300 - 8;
+  popover.style.left = left + 'px';
+  popover.style.top = top + 'px';
+}
+
+function saveTag() {
+  const customInput = document.getElementById('tag-custom-input').value.trim();
+  const presetsEl = document.getElementById('tag-presets');
+  const selectedPreset = presetsEl.querySelector('.tag-preset-btn.selected');
+
+  let result;
+  if (customInput) {
+    result = { tag: customInput, tagClass: 'tag-custom' };
+  } else if (selectedPreset) {
+    const p = TAG_PRESETS.find(p => p.tag === selectedPreset.textContent);
+    result = p || { tag: selectedPreset.textContent, tagClass: 'tag-custom' };
+  } else {
+    closeTagPopover();
+    return;
+  }
+
+  if (LOCATIONS[tagPopoverLocId]) {
+    LOCATIONS[tagPopoverLocId].tag = result.tag;
+    LOCATIONS[tagPopoverLocId].tagClass = result.tagClass;
+    if (LOCATIONS[tagPopoverLocId].custom) saveCustomLocations();
+  }
+  saveTagOverride(tagPopoverLocId, result);
+  renderTagInNav(tagPopoverLocId, result.tag, result.tagClass);
+  closeTagPopover();
+}
+
+function clearTag() {
+  if (LOCATIONS[tagPopoverLocId]) {
+    LOCATIONS[tagPopoverLocId].tag = '';
+    LOCATIONS[tagPopoverLocId].tagClass = '';
+    if (LOCATIONS[tagPopoverLocId].custom) saveCustomLocations();
+  }
+  saveTagOverride(tagPopoverLocId, null);
+  renderTagInNav(tagPopoverLocId, null, null);
+  closeTagPopover();
+}
+
+function closeTagPopover() {
+  document.getElementById('tag-popover').classList.remove('open');
+  tagPopoverLocId = null;
+}
+
+// Close popover on outside click
+document.addEventListener('click', (e) => {
+  const popover = document.getElementById('tag-popover');
+  if (popover.classList.contains('open') && !popover.contains(e.target)) {
+    closeTagPopover();
+  }
+});
+
+// ─── End tag editing ──────────────────────────────────────────────────────────
+
+
 const CUSTOM_LOCS_KEY = 'surf-custom-locations';
 
 function saveCustomLocations() {
@@ -3305,6 +3716,7 @@ function toggleSection(id) {
 
 // Init — critical path first
 loadCustomLocations();       // restore any saved custom spots
+applyTagOverrides();         // restore any saved tag edits
 fetchNavSwells();            // small, parallel fetches for nav swell numbers
 renderPhotoGallery('cannon-beach'); // render photos for default location
 loadAll();                   // loads Cannon Beach immediately
