@@ -15,6 +15,8 @@
 <link rel="dns-prefetch" href="https://commons.wikimedia.org">
 <link rel="dns-prefetch" href="https://upload.wikimedia.org">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js" defer></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -629,6 +631,46 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .error-text { color: #c0392b; font-size: 13px; }
+
+  /* Location map embed */
+  .surf-map-tooltip {
+    background: var(--white);
+    border: 1px solid var(--hairline-soft);
+    border-radius: 10px;
+    box-shadow: var(--shadow-md);
+    padding: 6px 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .surf-map-tooltip::before { display: none; }
+
+  /* Location map embed */
+  .map-card {
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--hairline-soft);
+    box-shadow: var(--shadow-sm);
+    background: rgba(45,55,72,0.03);
+    position: relative;
+    width: 100%;
+    height: 320px;
+  }
+
+  .map-card iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    position: absolute;
+    inset: 0;
+  }
+
+  @media (max-width: 700px) {
+    .map-card { height: 240px; }
+  }
 
   /* Windy embed */
   .windy-wrap {
@@ -1832,6 +1874,14 @@
     </div>
   </div>
 
+  <!-- Map -->
+  <div class="section-label" onclick="toggleSection('location-map')">Map<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+  <div class="section-body" id="section-location-map" style="margin-bottom:1.25rem;">
+    <div class="map-card">
+      <div id="location-map-div" style="width:100%;height:100%;"></div>
+    </div>
+  </div>
+
   <!-- Windy Map — lazy loaded on first expand -->
   <div class="section-label collapsed" onclick="toggleSection('map')">Wind & swell map<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
   <div class="section-body collapsed" id="section-map">
@@ -2610,6 +2660,9 @@ function switchLocation(locId) {
     iframe.dataset.src = newWindySrc;
   }
 
+  // Update location map
+  updateLocationMap(lat, lon);
+
   const cached = dataCache[locId];
   if (cached) {
     // Instant render from cache — no loading spinners
@@ -2734,21 +2787,28 @@ async function fetchNOAATides(loc) {
 
 async function fetchNOAABuoy(loc) {
   const { buoyId } = loc;
-  // NOAA's realtime txt blocks CORS — route through a public proxy
+  const ndbc = `https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.txt`;
   const proxies = [
-    `https://corsproxy.io/?url=${encodeURIComponent(`https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.txt`)}`,
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://www.ndbc.noaa.gov/data/realtime2/${buoyId}.txt`)}`,
+    `https://corsproxy.io/?url=${encodeURIComponent(ndbc)}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(ndbc)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(ndbc)}`,
+    `https://thingproxy.freeboard.io/fetch/${ndbc}`,
   ];
   let text = null;
   for (const url of proxies) {
     try {
       const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-      if (res.ok) { text = await res.text(); break; }
+      if (res.ok) {
+        const t = await res.text();
+        // Sanity-check: NDBC files start with '#YY' header
+        if (t && t.includes('WVHT')) { text = t; break; }
+      }
     } catch(e) { continue; }
   }
   if (!text) throw new Error('Buoy fetch failed');
   const lines = text.trim().split('\n');
   const headers = lines[0].replace(/^#\s*/, '').split(/\s+/);
+  // Skip the units row (line index 1), use first data row (line index 2)
   const latest = lines[2].split(/\s+/);
   const get = (name) => {
     const i = headers.indexOf(name);
@@ -3506,6 +3566,18 @@ async function addLocation() {
   LOCATIONS[id] = loc;
   saveCustomLocations();
   addNavButton(loc);
+
+  // Add a marker to the map for the new spot
+  if (_leafletMap && !_spotMarkers[id]) {
+    const marker = L.marker([lat, lon], { icon: _makeSpotIcon(false) })
+      .addTo(_leafletMap)
+      .bindTooltip(`<strong>${loc.name}</strong><br><span style="font-size:11px;color:#718096">${loc.subtitle}</span>`, {
+        direction: 'top', offset: [0, -6], opacity: 1, className: 'surf-map-tooltip'
+      });
+    marker.on('click', () => switchLocation(loc.id));
+    _spotMarkers[id] = marker;
+  }
+
   closeAddModal();
 
   // Fetch swell for nav pill
@@ -3551,6 +3623,8 @@ function removeLocation(e, locId) {
   delete dataCache[locId];
   const btn = document.querySelector(`.loc-btn[data-loc="${locId}"]`);
   if (btn) btn.remove();
+  // Remove map marker
+  if (_spotMarkers[locId]) { _spotMarkers[locId].remove(); delete _spotMarkers[locId]; }
   saveCustomLocations();
 
   // Auto-exit edit mode if only one spot remains
@@ -3782,12 +3856,78 @@ function toggleSection(id) {
   }
 }
 
+// ─── Minimal Leaflet location map ─────────────────────────────────────────
+let _leafletMap = null;
+let _spotMarkers = {}; // locId → L.marker
+
+function _makeSpotIcon(active) {
+  return L.divIcon({
+    className: '',
+    html: active
+      ? `<div style="width:14px;height:14px;border-radius:50%;background:#4a5568;border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`
+      : `<div style="width:9px;height:9px;border-radius:50%;background:#a0aab8;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.18);"></div>`,
+    iconSize: active ? [14, 14] : [9, 9],
+    iconAnchor: active ? [7, 7] : [4.5, 4.5],
+  });
+}
+
+function initLocationMap(activeLat, activeLon) {
+  if (_leafletMap) return;
+  _leafletMap = L.map('location-map-div', {
+    zoomControl: true,
+    scrollWheelZoom: false,
+    touchZoom: true,
+    bounceAtZoomLimits: false,
+    attributionControl: true,
+  });
+
+  // Enable two-finger trackpad / scroll-wheel zoom on focus, disable on blur
+  // so it doesn't hijack page scrolling when the map isn't the target
+  const mapEl = document.getElementById('location-map-div');
+  mapEl.addEventListener('mouseenter', () => _leafletMap.scrollWheelZoom.enable());
+  mapEl.addEventListener('mouseleave', () => _leafletMap.scrollWheelZoom.disable());
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19,
+  }).addTo(_leafletMap);
+
+  const bounds = [];
+  Object.values(LOCATIONS).forEach(loc => {
+    const isActive = (loc.lat === activeLat && loc.lon === activeLon);
+    const marker = L.marker([loc.lat, loc.lon], { icon: _makeSpotIcon(isActive) })
+      .addTo(_leafletMap)
+      .bindTooltip(`<strong>${loc.name}</strong><br><span style="font-size:11px;color:#718096">${loc.subtitle}</span>`, {
+        direction: 'top', offset: [0, -6], opacity: 1,
+        className: 'surf-map-tooltip'
+      });
+    marker.on('click', () => switchLocation(loc.id));
+    _spotMarkers[loc.id] = marker;
+    bounds.push([loc.lat, loc.lon]);
+  });
+
+  if (bounds.length) {
+    _leafletMap.fitBounds(bounds, { padding: [32, 32] });
+  }
+}
+
+function updateLocationMap(lat, lon) {
+  if (!_leafletMap) { initLocationMap(lat, lon); return; }
+  // Update marker styles — active = dark, others = muted
+  Object.entries(_spotMarkers).forEach(([id, marker]) => {
+    const loc = LOCATIONS[id];
+    const isActive = loc && loc.lat === lat && loc.lon === lon;
+    marker.setIcon(_makeSpotIcon(isActive));
+  });
+}
+
 // Init — critical path first
 loadCustomLocations();       // restore any saved custom spots
 applyTagOverrides();         // restore any saved tag edits
 fetchNavSwells();            // small, parallel fetches for nav swell numbers
 renderPhotoGallery('cannon-beach'); // render photos for default location
 loadAll();                   // loads Cannon Beach immediately
+initLocationMap(45.8918, -123.9615); // init minimal location map
 
 // Defer non-critical prefetch until the browser is idle, so the initial
 // render / interactive threshold isn't blocked by background fetches
