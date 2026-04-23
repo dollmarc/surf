@@ -600,6 +600,39 @@
     color: var(--ink);
   }
 
+  .section-popout-btn {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.06);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0;
+    margin-left: 4px;
+    transition: background 0.15s, color 0.15s;
+    color: var(--stone);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .section-label:hover .section-popout-btn {
+    opacity: 1;
+    pointer-events: auto;
+    background: rgba(0,0,0,0.1);
+  }
+  .section-popout-btn:hover {
+    background: rgba(0,0,0,0.14) !important;
+    color: var(--ink);
+  }
+  .section-popout-btn svg {
+    width: 10px;
+    height: 10px;
+    display: block;
+  }
+
   /* Water temp */
   .water-temp-big {
     font-size: 3rem;
@@ -673,6 +706,247 @@
   }
 
   /* Windy embed */
+  /* ════════════════════════════════
+     SURF CAMS SECTION
+  ════════════════════════════════ */
+  .surfcam-wrap {
+    position: relative;
+    width: 100%;
+    height: 70vh;
+    min-height: 400px;
+    max-height: 700px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #000;
+    margin-bottom: 0.25rem;
+  }
+
+  #surfcam-cams {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Scroll layout */
+  #surfcam-cams.layout-scroll {
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  #surfcam-cams.layout-scroll .surfcam-slot {
+    width: 100%; height: 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  #surfcam-cams.layout-scroll .surfcam-slot + .surfcam-slot {
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* Grid layout */
+  #surfcam-cams.layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    overflow: hidden;
+  }
+  #surfcam-cams.layout-grid .surfcam-slot {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
+
+  @media (max-width: 600px) and (orientation: portrait) {
+    #surfcam-cams.layout-grid {
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    #surfcam-cams.layout-grid .surfcam-slot {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      flex-shrink: 0;
+    }
+    #surfcam-cams.layout-grid .surfcam-slot + .surfcam-slot {
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .surfcam-wrap { height: auto; max-height: none; }
+  }
+
+  .surfcam-slot video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+  }
+  .surfcam-slot iframe {
+    width: 100%; height: 100%;
+    border: none;
+    display: block;
+  }
+  #surfcam-slot-otterrock iframe {
+    height: calc(100% + 80px);
+    margin-top: -40px;
+  }
+
+  .surfcam-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 28px 20px 18px;
+    background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .surfcam-slot:hover .surfcam-bar { opacity: 1; }
+
+  .surfcam-label {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.85);
+  }
+
+  .surfcam-live {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+  }
+
+  .surfcam-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #e04040;
+    animation: surfcam-pulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes surfcam-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .surfcam-expand-btn {
+    position: absolute;
+    top: 12px; right: 14px;
+    z-index: 20;
+    width: 34px; height: 34px;
+    border: 1px solid rgba(255,255,255,0.28);
+    border-radius: 50%;
+    background: rgba(0,0,0,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease, background 0.2s ease;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    appearance: none;
+  }
+  .surfcam-slot:hover .surfcam-expand-btn { opacity: 1; }
+  .surfcam-expand-btn:hover { background: rgba(0,0,0,0.65); }
+  .surfcam-expand-btn svg {
+    width: 14px; height: 14px;
+    fill: none;
+    stroke: rgba(255,255,255,0.85);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  #surfcam-layout-bar {
+    position: absolute;
+    top: 12px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 5px 6px;
+    background: rgba(12,12,12,0.75);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .surfcam-wrap:hover #surfcam-layout-bar,
+  #surfcam-layout-bar:hover,
+  #surfcam-layout-bar.peek { opacity: 1; }
+
+  .surfcam-layout-btn {
+    width: 34px; height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.4);
+    transition: background 0.2s ease, color 0.2s ease;
+    cursor: pointer;
+    flex-shrink: 0;
+    appearance: none;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+  }
+  .surfcam-layout-btn:hover {
+    color: rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.08);
+  }
+  .surfcam-layout-btn.active {
+    background: rgba(255,255,255,0.13);
+    color: rgba(255,255,255,0.95);
+  }
+  .surfcam-layout-btn svg { width: 16px; height: 16px; display: block; }
+
+  .surfcam-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+    z-index: 3;
+  }
+  .surfcam-loading.hidden { opacity: 0; }
+  .surfcam-spinner {
+    width: 28px; height: 28px;
+    border: 1.5px solid rgba(255,255,255,0.12);
+    border-top-color: rgba(255,255,255,0.55);
+    border-radius: 50%;
+    animation: surfcam-spin 0.9s linear infinite;
+  }
+  @keyframes surfcam-spin { to { transform: rotate(360deg); } }
+  .surfcam-loading-label {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+  }
+
   .windy-wrap {
     border-radius: 20px;
     overflow: hidden;
@@ -1881,6 +2155,50 @@
       <div id="location-map-div" style="width:100%;height:100%;"></div>
     </div>
   </div>
+
+  <!-- Surf Cams — collapsed by default, lazy-inits HLS on first expand -->
+  <div class="section-label collapsed" onclick="toggleSection('surfcams')">Surf cams<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><button class="section-popout-btn" onclick="event.stopPropagation();openSurfcamWindow()" title="Open cams in new window"><svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 1.5H2C1.72 1.5 1.5 1.72 1.5 2V8C1.5 8.28 1.72 8.5 2 8.5H8C8.28 8.5 8.5 8.28 8.5 8V6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M5.5 1.5H8.5V4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="8.5" y1="1.5" x2="5" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button></div>
+  <div class="section-body collapsed" id="section-surfcams" style="margin-bottom:1.25rem;">
+    <div class="surfcam-wrap">
+      <nav id="surfcam-layout-bar" role="toolbar" aria-label="Cam layout">
+        <button class="surfcam-layout-btn" data-layout="scroll" title="Fullscreen scroll">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="3.5" rx="0.75" fill="currentColor"/><rect x="1" y="6.25" width="14" height="3.5" rx="0.75" fill="currentColor"/><rect x="1" y="10.5" width="14" height="3.5" rx="0.75" fill="currentColor"/></svg>
+        </button>
+        <button class="surfcam-layout-btn" data-layout="grid" title="4-up grid">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1.5" width="6" height="5.5" rx="0.75" fill="currentColor"/><rect x="9" y="1.5" width="6" height="5.5" rx="0.75" fill="currentColor"/><rect x="1" y="9" width="6" height="5.5" rx="0.75" fill="currentColor"/><rect x="9" y="9" width="6" height="5.5" rx="0.75" fill="currentColor"/></svg>
+        </button>
+      </nav>
+      <div id="surfcam-cams" class="layout-scroll">
+        <!-- Pacific City (HLS) -->
+        <div class="surfcam-slot" id="surfcam-slot-moment" data-label="Pacific City" data-type="hls" data-src="https://2-fss-2.themediacdn.com/pl_126/amlst:206100-2899404/playlist.m3u8">
+          <div class="surfcam-loading" id="surfcam-moment-loading"><div class="surfcam-spinner"></div><div class="surfcam-loading-label">Connecting…</div></div>
+          <video id="surfcam-moment-video" autoplay muted playsinline></video>
+          <button class="surfcam-expand-btn" title="Open fullscreen"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+          <div class="surfcam-bar"><span class="surfcam-label">Pacific City</span><span class="surfcam-live"><span class="surfcam-dot"></span>Live</span></div>
+        </div>
+        <!-- Kiwanda (HLS) -->
+        <div class="surfcam-slot" id="surfcam-slot-pelican" data-label="Kiwanda" data-type="hls" data-src="https://beachcam.pelicanbrewing.com/stream/53e4366f-8e2f-4252-a39d-1b4d0139db6a/channel/0/hls/live/index.m3u8">
+          <div class="surfcam-loading" id="surfcam-pelican-loading"><div class="surfcam-spinner"></div><div class="surfcam-loading-label">Connecting…</div></div>
+          <video id="surfcam-pelican-video" autoplay muted playsinline></video>
+          <button class="surfcam-expand-btn" title="Open fullscreen"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+          <div class="surfcam-bar"><span class="surfcam-label">Kiwanda</span><span class="surfcam-live"><span class="surfcam-dot"></span>Live</span></div>
+        </div>
+        <!-- Otter Rock (Surfline iframe) -->
+        <div class="surfcam-slot" id="surfcam-slot-otterrock" data-label="Otter Rock" data-type="iframe" data-src="https://embed.cdn-surfline.com/cams/5a0d9dfdc3367a001a914342/ca020a2a381494ffd1af795bd5e5c8ba828ffbef">
+          <iframe src="https://embed.cdn-surfline.com/cams/5a0d9dfdc3367a001a914342/ca020a2a381494ffd1af795bd5e5c8ba828ffbef" allowfullscreen allow="autoplay; fullscreen" title="Otter Rock Live Cam"></iframe>
+          <button class="surfcam-expand-btn" title="Open fullscreen"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+          <div class="surfcam-bar"><span class="surfcam-label">Otter Rock</span><span class="surfcam-live"><span class="surfcam-dot"></span>Live</span></div>
+        </div>
+        <!-- Westport / The Groins (HLS) -->
+        <div class="surfcam-slot" id="surfcam-slot-westport" data-label="The Groins" data-type="hls" data-src="https://2-fss-2.streamhoster.com/pl_126/203494-1423454-1/playlist.m3u8">
+          <div class="surfcam-loading" id="surfcam-westport-loading"><div class="surfcam-spinner"></div><div class="surfcam-loading-label">Connecting…</div></div>
+          <video id="surfcam-westport-video" autoplay muted playsinline></video>
+          <button class="surfcam-expand-btn" title="Open fullscreen"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+          <div class="surfcam-bar"><span class="surfcam-label">The Groins</span><span class="surfcam-live"><span class="surfcam-dot"></span>Live</span></div>
+        </div>
+      </div><!-- #surfcam-cams -->
+    </div><!-- .surfcam-wrap -->
+  </div><!-- #section-surfcams -->
 
   <!-- Windy Map — lazy loaded on first expand -->
   <div class="section-label collapsed" onclick="toggleSection('map')">Wind & swell map<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
@@ -3963,6 +4281,227 @@ document.addEventListener('visibilitychange', () => {
     loadAll();
   }
 });
+</script>
+
+<!-- ════════════════════════════════════════════════════════
+     SURF CAMS — HLS player + layout switcher
+     Lazy-initialised on first expand of the section
+════════════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js" defer></script>
+<script>
+(function() {
+  let surfcamInited = false;
+
+  // ── Open all cams in a standalone fullscreen window ───────────────────────
+  window.openSurfcamWindow = function() {
+    const w = window.screen.width, h = window.screen.height;
+    const features = `width=${w},height=${h},left=0,top=0,toolbar=0,menubar=0,scrollbars=0,resizable=1`;
+    const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Surf Cams</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+button{appearance:none;background:none;border:none;padding:0;font:inherit;cursor:pointer}
+html,body{width:100%;height:100%;background:#000;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;overflow:hidden}
+#cams{width:100%;height:100%}
+#cams.layout-scroll{height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch}
+#cams.layout-scroll .cam-slot{width:100%;height:100vh;scroll-snap-align:start;scroll-snap-stop:always;position:relative;overflow:hidden;flex-shrink:0}
+#cams.layout-scroll .cam-slot+.cam-slot{border-top:1px solid rgba(255,255,255,0.06)}
+#cams.layout-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;height:100vh;overflow:hidden}
+#cams.layout-grid .cam-slot{position:relative;overflow:hidden;width:100%;height:100%}
+@media(max-width:600px)and(orientation:portrait){#cams.layout-grid{display:flex;flex-direction:column;height:auto;overflow-y:auto}.cam-slot{width:100%;height:auto;aspect-ratio:16/9;flex-shrink:0}}
+.cam-slot video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.cam-slot iframe{width:100%;height:100%;border:none;display:block}
+#slot-otterrock iframe{height:calc(100% + 80px);margin-top:-40px}
+.cam-bar{position:absolute;bottom:0;left:0;right:0;padding:28px 20px 18px;background:linear-gradient(to top,rgba(0,0,0,.65),transparent);display:flex;align-items:flex-end;justify-content:space-between;opacity:0;transition:opacity .3s;pointer-events:none;z-index:10}
+.cam-slot:hover .cam-bar{opacity:1}
+.cam-label{font-size:11px;font-weight:400;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.85)}
+.cam-live{display:flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.dot{width:6px;height:6px;border-radius:50%;background:#e04040;animation:pulse 2s ease-in-out infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.cam-loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;pointer-events:none;transition:opacity .5s;z-index:3}
+.cam-loading.hidden{opacity:0}
+.spinner{width:28px;height:28px;border:1.5px solid rgba(255,255,255,.12);border-top-color:rgba(255,255,255,.55);border-radius:50%;animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(255,255,255,.35)}
+#layout-bar{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:200;display:flex;align-items:center;gap:2px;padding:5px 6px;background:rgba(12,12,12,.75);border:1px solid rgba(255,255,255,.1);border-radius:10px;backdrop-filter:blur(12px);opacity:0;transition:opacity .3s}
+body:hover #layout-bar,#layout-bar:hover,#layout-bar.peek{opacity:1}
+.layout-btn{width:34px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);transition:background .2s,color .2s;cursor:pointer;flex-shrink:0}
+.layout-btn:hover{color:rgba(255,255,255,.8);background:rgba(255,255,255,.08)}
+.layout-btn.active{background:rgba(255,255,255,.13);color:rgba(255,255,255,.95)}
+.layout-btn svg{width:16px;height:16px;display:block}
+</style></head><body>
+<nav id="layout-bar">
+  <button class="layout-btn" data-layout="scroll" title="Scroll">
+    <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="3.5" rx=".75" fill="currentColor"/><rect x="1" y="6.25" width="14" height="3.5" rx=".75" fill="currentColor"/><rect x="1" y="10.5" width="14" height="3.5" rx=".75" fill="currentColor"/></svg>
+  </button>
+  <button class="layout-btn" data-layout="grid" title="Grid">
+    <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1.5" width="6" height="5.5" rx=".75" fill="currentColor"/><rect x="9" y="1.5" width="6" height="5.5" rx=".75" fill="currentColor"/><rect x="1" y="9" width="6" height="5.5" rx=".75" fill="currentColor"/><rect x="9" y="9" width="6" height="5.5" rx=".75" fill="currentColor"/></svg>
+  </button>
+</nav>
+<div id="cams" class="layout-scroll">
+  <div class="cam-slot" id="slot-moment" data-label="Pacific City" data-type="hls" data-src="https://2-fss-2.themediacdn.com/pl_126/amlst:206100-2899404/playlist.m3u8">
+    <div class="cam-loading" id="moment-loading"><div class="spinner"></div><div class="loading-label">Connecting…</div></div>
+    <video id="moment-video" autoplay muted playsinline></video>
+    <div class="cam-bar"><span class="cam-label">Pacific City</span><span class="cam-live"><span class="dot"></span>Live</span></div>
+  </div>
+  <div class="cam-slot" id="slot-pelican" data-label="Kiwanda" data-type="hls" data-src="https://beachcam.pelicanbrewing.com/stream/53e4366f-8e2f-4252-a39d-1b4d0139db6a/channel/0/hls/live/index.m3u8">
+    <div class="cam-loading" id="pelican-loading"><div class="spinner"></div><div class="loading-label">Connecting…</div></div>
+    <video id="pelican-video" autoplay muted playsinline></video>
+    <div class="cam-bar"><span class="cam-label">Kiwanda</span><span class="cam-live"><span class="dot"></span>Live</span></div>
+  </div>
+  <div class="cam-slot" id="slot-otterrock" data-label="Otter Rock" data-type="iframe" data-src="https://embed.cdn-surfline.com/cams/5a0d9dfdc3367a001a914342/ca020a2a381494ffd1af795bd5e5c8ba828ffbef">
+    <iframe src="https://embed.cdn-surfline.com/cams/5a0d9dfdc3367a001a914342/ca020a2a381494ffd1af795bd5e5c8ba828ffbef" allowfullscreen allow="autoplay; fullscreen" title="Otter Rock Live Cam"></iframe>
+    <div class="cam-bar"><span class="cam-label">Otter Rock</span><span class="cam-live"><span class="dot"></span>Live</span></div>
+  </div>
+  <div class="cam-slot" id="slot-westport" data-label="The Groins" data-type="hls" data-src="https://2-fss-2.streamhoster.com/pl_126/203494-1423454-1/playlist.m3u8">
+    <div class="cam-loading" id="westport-loading"><div class="spinner"></div><div class="loading-label">Connecting…</div></div>
+    <video id="westport-video" autoplay muted playsinline></video>
+    <div class="cam-bar"><span class="cam-label">The Groins</span><span class="cam-live"><span class="dot"></span>Live</span></div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js"><\/script>
+<script>
+function initHLS(v,l,src){if(Hls.isSupported()){var h=new Hls({lowLatencyMode:true});h.loadSource(src);h.attachMedia(v);h.on(Hls.Events.MANIFEST_PARSED,function(){v.play().catch(function(){})});h.on(Hls.Events.ERROR,function(_,d){if(d.fatal&&l)l.classList.remove('hidden')})}else if(v.canPlayType('application/vnd.apple.mpegurl')){v.src=src;v.play().catch(function(){})}if(l)v.addEventListener('playing',function(){l.classList.add('hidden')})}
+initHLS(document.getElementById('moment-video'),document.getElementById('moment-loading'),'https://2-fss-2.themediacdn.com/pl_126/amlst:206100-2899404/playlist.m3u8');
+initHLS(document.getElementById('pelican-video'),document.getElementById('pelican-loading'),'https://beachcam.pelicanbrewing.com/stream/53e4366f-8e2f-4252-a39d-1b4d0139db6a/channel/0/hls/live/index.m3u8');
+initHLS(document.getElementById('westport-video'),document.getElementById('westport-loading'),'https://2-fss-2.streamhoster.com/pl_126/203494-1423454-1/playlist.m3u8');
+var cams=document.getElementById('cams'),bar=document.getElementById('layout-bar'),btns=document.querySelectorAll('.layout-btn');
+var current=localStorage.getItem('surfcam-layout')||'scroll';
+function applyLayout(n){current=n;cams.classList.remove('layout-scroll','layout-grid');cams.classList.add('layout-'+n);btns.forEach(function(b){b.classList.toggle('active',b.dataset.layout===n)})}
+applyLayout(current);
+btns.forEach(function(b){b.addEventListener('click',function(){if(b.dataset.layout===current)return;applyLayout(b.dataset.layout);localStorage.setItem('surfcam-layout',b.dataset.layout)})});
+bar.classList.add('peek');setTimeout(function(){bar.classList.remove('peek')},2200);
+<\/script>
+</body></html>`;
+    const win = window.open('', 'surfcams', features);
+    if (win) { win.document.write(html); win.document.close(); }
+  };
+
+  // ── HLS init ──────────────────────────────────────────────────────────────
+  function initSurfcamHLS(videoEl, loadingEl, src) {
+    if (typeof Hls === 'undefined') return; // HLS.js not loaded yet
+    if (Hls.isSupported()) {
+      const hls = new Hls({ lowLatencyMode: true });
+      hls.loadSource(src);
+      hls.attachMedia(videoEl);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => videoEl.play().catch(() => {}));
+      hls.on(Hls.Events.ERROR, (_, d) => {
+        if (d.fatal && loadingEl) loadingEl.classList.remove('hidden');
+      });
+    } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
+      videoEl.src = src;
+      videoEl.play().catch(() => {});
+    }
+    if (loadingEl) {
+      videoEl.addEventListener('playing', () => loadingEl.classList.add('hidden'));
+    }
+  }
+
+  function startSurfcams() {
+    if (surfcamInited) return;
+    surfcamInited = true;
+
+    // Wait for HLS.js to be ready (it's deferred)
+    const tryInit = () => {
+      if (typeof Hls === 'undefined') { setTimeout(tryInit, 100); return; }
+      initSurfcamHLS(
+        document.getElementById('surfcam-moment-video'),
+        document.getElementById('surfcam-moment-loading'),
+        'https://2-fss-2.themediacdn.com/pl_126/amlst:206100-2899404/playlist.m3u8'
+      );
+      initSurfcamHLS(
+        document.getElementById('surfcam-pelican-video'),
+        document.getElementById('surfcam-pelican-loading'),
+        'https://beachcam.pelicanbrewing.com/stream/53e4366f-8e2f-4252-a39d-1b4d0139db6a/channel/0/hls/live/index.m3u8'
+      );
+      initSurfcamHLS(
+        document.getElementById('surfcam-westport-video'),
+        document.getElementById('surfcam-westport-loading'),
+        'https://2-fss-2.streamhoster.com/pl_126/203494-1423454-1/playlist.m3u8'
+      );
+      initSurfcamLayoutBar();
+      initSurfcamExpand();
+    };
+    tryInit();
+  }
+
+  // Hook into existing toggleSection — patch it after the page script runs
+  window.addEventListener('load', () => {
+    const origToggle = window.toggleSection;
+    window.toggleSection = function(id) {
+      origToggle(id);
+      if (id === 'surfcams') {
+        const body = document.getElementById('section-surfcams');
+        if (body && !body.classList.contains('collapsed')) {
+          startSurfcams();
+          // Peek layout bar
+          const bar = document.getElementById('surfcam-layout-bar');
+          if (bar) {
+            bar.classList.add('peek');
+            setTimeout(() => bar.classList.remove('peek'), 2200);
+          }
+        }
+      }
+    };
+  });
+
+  // ── Layout switcher ────────────────────────────────────────────────────────
+  function initSurfcamLayoutBar() {
+    const cams = document.getElementById('surfcam-cams');
+    const btns = document.querySelectorAll('.surfcam-layout-btn');
+    let current = localStorage.getItem('surfcam-layout') || 'scroll';
+
+    function applyLayout(name) {
+      current = name;
+      cams.classList.remove('layout-scroll', 'layout-grid');
+      cams.classList.add('layout-' + name);
+      btns.forEach(b => b.classList.toggle('active', b.dataset.layout === name));
+    }
+
+    applyLayout(current);
+
+    btns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const l = btn.dataset.layout;
+        if (l === current) return;
+        applyLayout(l);
+        localStorage.setItem('surfcam-layout', l);
+      });
+    });
+  }
+
+  // ── Fullscreen expand ──────────────────────────────────────────────────────
+  function initSurfcamExpand() {
+    document.querySelectorAll('.surfcam-expand-btn').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const slot = btn.closest('.surfcam-slot');
+        if (!slot) return;
+        const type  = slot.dataset.type;
+        const src   = slot.dataset.src;
+        const label = slot.dataset.label;
+        const w = window.screen.width, h = window.screen.height;
+        const features = `width=${w},height=${h},left=0,top=0,toolbar=0,menubar=0,scrollbars=0,resizable=1`;
+        let html;
+        if (type === 'hls') {
+          html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${label}</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#000}video{width:100%;height:100%;object-fit:cover;display:block}</style></head><body>
+<video id="v" autoplay muted playsinline></video>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js"><\/script>
+<script>var v=document.getElementById('v');if(Hls.isSupported()){var h=new Hls({lowLatencyMode:true});h.loadSource('${src}');h.attachMedia(v);h.on(Hls.Events.MANIFEST_PARSED,function(){v.play().catch(function(){})});}else if(v.canPlayType('application/vnd.apple.mpegurl')){v.src='${src}';v.play().catch(function(){});}<\/script>
+</body></html>`;
+        } else {
+          html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${label}</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#000}iframe{width:100%;height:100%;border:none;display:block}</style></head><body>
+<iframe src="${src}" allowfullscreen allow="autoplay; fullscreen" title="${label}"></iframe></body></html>`;
+        }
+        const win = window.open('', '_blank', features);
+        if (win) { win.document.write(html); win.document.close(); }
+      });
+    });
+  }
+})();
 </script>
 </body>
 </html>
