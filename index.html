@@ -2061,6 +2061,50 @@
     </div>
   </div>
 
+  <!-- Surf Cams — expanded by default, lazy-inits HLS on load -->
+  <div class="section-label" onclick="toggleSection('surfcams')">Surf cams<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><button class="section-popout-btn" onclick="event.stopPropagation();openSurfcamWindow()" title="Open cams in new window"><svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 1.5H2C1.72 1.5 1.5 1.72 1.5 2V8C1.5 8.28 1.72 8.5 2 8.5H8C8.28 8.5 8.5 8.28 8.5 8V6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M5.5 1.5H8.5V4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="8.5" y1="1.5" x2="5" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button></div>
+  <div class="section-body" id="section-surfcams" style="margin-bottom:1.25rem;">
+    <div class="surfcam-wrap">
+      <nav id="surfcam-layout-bar" role="toolbar" aria-label="Cam layout">
+        <button class="surfcam-layout-btn" data-layout="scroll" title="Fullscreen scroll">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="3.5" rx="0.75" fill="currentColor"/><rect x="1" y="6.25" width="14" height="3.5" rx="0.75" fill="currentColor"/><rect x="1" y="10.5" width="14" height="3.5" rx="0.75" fill="currentColor"/></svg>
+        </button>
+        <button class="surfcam-layout-btn" data-layout="grid" title="4-up grid">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1.5" width="6" height="5.5" rx="0.75" fill="currentColor"/><rect x="9" y="1.5" width="6" height="5.5" rx="0.75" fill="currentColor"/><rect x="1" y="9" width="6" height="5.5" rx="0.75" fill="currentColor"/><rect x="9" y="9" width="6" height="5.5" rx="0.75" fill="currentColor"/></svg>
+        </button>
+      </nav>
+      <div id="surfcam-cams" class="layout-scroll">
+        <!-- Pacific City (HLS) -->
+        <div class="surfcam-slot" id="surfcam-slot-moment" data-label="Pacific City" data-type="hls" data-src="https://2-fss-2.themediacdn.com/pl_126/amlst:206100-2899404/playlist.m3u8">
+          <div class="surfcam-loading" id="surfcam-moment-loading"><div class="surfcam-spinner"></div><div class="surfcam-loading-label">Connecting…</div></div>
+          <video id="surfcam-moment-video" autoplay muted playsinline></video>
+          <button class="surfcam-expand-btn" title="Open fullscreen"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+          <div class="surfcam-bar"><span class="surfcam-label">Pacific City</span><span class="surfcam-live"><span class="surfcam-dot"></span>Live</span></div>
+        </div>
+        <!-- Kiwanda (HLS) -->
+        <div class="surfcam-slot" id="surfcam-slot-pelican" data-label="Kiwanda" data-type="hls" data-src="https://beachcam.pelicanbrewing.com/stream/53e4366f-8e2f-4252-a39d-1b4d0139db6a/channel/0/hls/live/index.m3u8">
+          <div class="surfcam-loading" id="surfcam-pelican-loading"><div class="surfcam-spinner"></div><div class="surfcam-loading-label">Connecting…</div></div>
+          <video id="surfcam-pelican-video" autoplay muted playsinline></video>
+          <button class="surfcam-expand-btn" title="Open fullscreen"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+          <div class="surfcam-bar"><span class="surfcam-label">Kiwanda</span><span class="surfcam-live"><span class="surfcam-dot"></span>Live</span></div>
+        </div>
+        <!-- Otter Rock (Surfline iframe) -->
+        <div class="surfcam-slot" id="surfcam-slot-otterrock" data-label="Otter Rock" data-type="iframe" data-src="https://embed.cdn-surfline.com/cams/5a0d9dfdc3367a001a914342/ca020a2a381494ffd1af795bd5e5c8ba828ffbef">
+          <iframe src="https://embed.cdn-surfline.com/cams/5a0d9dfdc3367a001a914342/ca020a2a381494ffd1af795bd5e5c8ba828ffbef" allowfullscreen allow="autoplay; fullscreen" title="Otter Rock Live Cam"></iframe>
+          <button class="surfcam-expand-btn" title="Open fullscreen"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+          <div class="surfcam-bar"><span class="surfcam-label">Otter Rock</span><span class="surfcam-live"><span class="surfcam-dot"></span>Live</span></div>
+        </div>
+        <!-- Westport / The Groins (HLS) -->
+        <div class="surfcam-slot" id="surfcam-slot-westport" data-label="The Groins" data-type="hls" data-src="https://2-fss-2.streamhoster.com/pl_126/203494-1423454-1/playlist.m3u8">
+          <div class="surfcam-loading" id="surfcam-westport-loading"><div class="surfcam-spinner"></div><div class="surfcam-loading-label">Connecting…</div></div>
+          <video id="surfcam-westport-video" autoplay muted playsinline></video>
+          <button class="surfcam-expand-btn" title="Open fullscreen"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
+          <div class="surfcam-bar"><span class="surfcam-label">The Groins</span><span class="surfcam-live"><span class="surfcam-dot"></span>Live</span></div>
+        </div>
+      </div><!-- #surfcam-cams -->
+    </div><!-- .surfcam-wrap -->
+  </div><!-- #section-surfcams -->
+
   <!-- Photo Gallery -->
   <div class="section-label" onclick="toggleSection('photos')">Photos<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><button class="section-photo-add" onclick="event.stopPropagation();triggerPhotoUpload()" title="Add your photos">+</button></div>
   <div class="section-body" id="section-photos" style="margin-bottom:1.25rem;">
@@ -2155,50 +2199,6 @@
       <div id="location-map-div" style="width:100%;height:100%;"></div>
     </div>
   </div>
-
-  <!-- Surf Cams — collapsed by default, lazy-inits HLS on first expand -->
-  <div class="section-label collapsed" onclick="toggleSection('surfcams')">Surf cams<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><button class="section-popout-btn" onclick="event.stopPropagation();openSurfcamWindow()" title="Open cams in new window"><svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 1.5H2C1.72 1.5 1.5 1.72 1.5 2V8C1.5 8.28 1.72 8.5 2 8.5H8C8.28 8.5 8.5 8.28 8.5 8V6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M5.5 1.5H8.5V4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="8.5" y1="1.5" x2="5" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button></div>
-  <div class="section-body collapsed" id="section-surfcams" style="margin-bottom:1.25rem;">
-    <div class="surfcam-wrap">
-      <nav id="surfcam-layout-bar" role="toolbar" aria-label="Cam layout">
-        <button class="surfcam-layout-btn" data-layout="scroll" title="Fullscreen scroll">
-          <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="3.5" rx="0.75" fill="currentColor"/><rect x="1" y="6.25" width="14" height="3.5" rx="0.75" fill="currentColor"/><rect x="1" y="10.5" width="14" height="3.5" rx="0.75" fill="currentColor"/></svg>
-        </button>
-        <button class="surfcam-layout-btn" data-layout="grid" title="4-up grid">
-          <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1.5" width="6" height="5.5" rx="0.75" fill="currentColor"/><rect x="9" y="1.5" width="6" height="5.5" rx="0.75" fill="currentColor"/><rect x="1" y="9" width="6" height="5.5" rx="0.75" fill="currentColor"/><rect x="9" y="9" width="6" height="5.5" rx="0.75" fill="currentColor"/></svg>
-        </button>
-      </nav>
-      <div id="surfcam-cams" class="layout-scroll">
-        <!-- Pacific City (HLS) -->
-        <div class="surfcam-slot" id="surfcam-slot-moment" data-label="Pacific City" data-type="hls" data-src="https://2-fss-2.themediacdn.com/pl_126/amlst:206100-2899404/playlist.m3u8">
-          <div class="surfcam-loading" id="surfcam-moment-loading"><div class="surfcam-spinner"></div><div class="surfcam-loading-label">Connecting…</div></div>
-          <video id="surfcam-moment-video" autoplay muted playsinline></video>
-          <button class="surfcam-expand-btn" title="Open fullscreen"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
-          <div class="surfcam-bar"><span class="surfcam-label">Pacific City</span><span class="surfcam-live"><span class="surfcam-dot"></span>Live</span></div>
-        </div>
-        <!-- Kiwanda (HLS) -->
-        <div class="surfcam-slot" id="surfcam-slot-pelican" data-label="Kiwanda" data-type="hls" data-src="https://beachcam.pelicanbrewing.com/stream/53e4366f-8e2f-4252-a39d-1b4d0139db6a/channel/0/hls/live/index.m3u8">
-          <div class="surfcam-loading" id="surfcam-pelican-loading"><div class="surfcam-spinner"></div><div class="surfcam-loading-label">Connecting…</div></div>
-          <video id="surfcam-pelican-video" autoplay muted playsinline></video>
-          <button class="surfcam-expand-btn" title="Open fullscreen"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
-          <div class="surfcam-bar"><span class="surfcam-label">Kiwanda</span><span class="surfcam-live"><span class="surfcam-dot"></span>Live</span></div>
-        </div>
-        <!-- Otter Rock (Surfline iframe) -->
-        <div class="surfcam-slot" id="surfcam-slot-otterrock" data-label="Otter Rock" data-type="iframe" data-src="https://embed.cdn-surfline.com/cams/5a0d9dfdc3367a001a914342/ca020a2a381494ffd1af795bd5e5c8ba828ffbef">
-          <iframe src="https://embed.cdn-surfline.com/cams/5a0d9dfdc3367a001a914342/ca020a2a381494ffd1af795bd5e5c8ba828ffbef" allowfullscreen allow="autoplay; fullscreen" title="Otter Rock Live Cam"></iframe>
-          <button class="surfcam-expand-btn" title="Open fullscreen"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
-          <div class="surfcam-bar"><span class="surfcam-label">Otter Rock</span><span class="surfcam-live"><span class="surfcam-dot"></span>Live</span></div>
-        </div>
-        <!-- Westport / The Groins (HLS) -->
-        <div class="surfcam-slot" id="surfcam-slot-westport" data-label="The Groins" data-type="hls" data-src="https://2-fss-2.streamhoster.com/pl_126/203494-1423454-1/playlist.m3u8">
-          <div class="surfcam-loading" id="surfcam-westport-loading"><div class="surfcam-spinner"></div><div class="surfcam-loading-label">Connecting…</div></div>
-          <video id="surfcam-westport-video" autoplay muted playsinline></video>
-          <button class="surfcam-expand-btn" title="Open fullscreen"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
-          <div class="surfcam-bar"><span class="surfcam-label">The Groins</span><span class="surfcam-live"><span class="surfcam-dot"></span>Live</span></div>
-        </div>
-      </div><!-- #surfcam-cams -->
-    </div><!-- .surfcam-wrap -->
-  </div><!-- #section-surfcams -->
 
   <!-- Windy Map — lazy loaded on first expand -->
   <div class="section-label collapsed" onclick="toggleSection('map')">Wind & swell map<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
@@ -4444,6 +4444,14 @@ bar.classList.add('peek');setTimeout(function(){bar.classList.remove('peek')},22
         }
       }
     };
+
+    // Section is expanded by default — start cams immediately
+    startSurfcams();
+    const bar = document.getElementById('surfcam-layout-bar');
+    if (bar) {
+      bar.classList.add('peek');
+      setTimeout(() => bar.classList.remove('peek'), 2200);
+    }
   });
 
   // ── Layout switcher ────────────────────────────────────────────────────────
