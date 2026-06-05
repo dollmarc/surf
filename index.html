@@ -161,6 +161,30 @@
     color: var(--stone);
   }
 
+  .forecast-date-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--dusk);
+    background: rgba(74,85,104,0.08);
+    border-radius: 8px;
+    padding: 2px 9px 2px 7px;
+    margin-left: 8px;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+    vertical-align: middle;
+  }
+  .forecast-date-chip.visible {
+    opacity: 1; transform: translateX(0); pointer-events: auto; cursor: pointer;
+  }
+  .forecast-date-chip .chip-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--dusk); opacity: 0.5; flex-shrink: 0;
+  }
   .updated {
     font-size: 12px;
     color: var(--stone);
@@ -1931,6 +1955,114 @@
     color: rgba(255,255,255,0.4);
     pointer-events: none;
   }
+
+  /* ── 10-Day Forecast Calendar Strip (below loc-nav) ─────────────────────── */
+  #day-cal-wrap {
+    margin: 0.5rem 0 0.25rem;   /* small gap below nav */
+    padding: 0;
+    background: transparent;
+  }
+  /* Rail always visible in collapsed state — acts as the primary glanceable view */
+  #day-cal-wrap .day-cal-header {
+    padding: 5px 0 6px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--hairline);
+  }
+
+  /* ── 10-Day Forecast Calendar Module ─────────────────────────────────────── */
+  .day-cal-wrap { position: relative; }
+  .day-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .day-cal-label {
+    font-size: 9.5px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--stone-soft); display: flex; align-items: center; gap: 10px; flex: 1; margin-bottom: 0;
+  }
+  .day-cal-label::after { content: ''; flex: 1; height: 1px; background: var(--hairline); }
+  .collapse-toggle {
+    display: flex; align-items: center; gap: 5px; font-size: 9.5px; font-weight: 500;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--stone-soft);
+    background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 8px;
+    transition: background 0.15s, color 0.15s; font-family: inherit;
+  }
+  .collapse-toggle:hover { background: rgba(45,55,72,0.05); color: var(--stone); }
+  .collapse-toggle svg { transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); }
+  .day-cal-wrap.is-collapsed .collapse-toggle svg { transform: rotate(-180deg); }
+  .day-cal-expanded { overflow: hidden; max-height: 200px; opacity: 1; transition: max-height 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.22s ease; }
+  .day-cal-wrap.is-collapsed .day-cal-expanded { max-height: 0; opacity: 0; pointer-events: none; }
+  .day-cal-rail {
+    display: flex; align-items: center; gap: 0; overflow: hidden; max-height: 0; opacity: 0;
+    transition: max-height 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.22s ease; pointer-events: none;
+    border-radius: 12px; background: var(--white); border: 1px solid var(--hairline-soft); box-shadow: var(--shadow-sm);
+    margin-bottom: 2px;
+  }
+  .day-cal-wrap.is-collapsed .day-cal-rail { max-height: 56px; opacity: 1; pointer-events: auto; }
+  .rail-cell {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; padding: 8px 6px 7px; cursor: pointer; border-right: 1px solid var(--hairline-soft);
+    transition: background 0.15s; min-width: 0; position: relative;
+  }
+  .rail-cell:last-child { border-right: none; }
+  .rail-cell:hover { background: var(--pale-warm); }
+  .rail-cell.rail-active { background: var(--pale); }
+  .rail-cell.rail-active::after {
+    content: ''; position: absolute; bottom: 0; left: 20%; right: 20%;
+    height: 2px; border-radius: 2px 2px 0 0; background: var(--rail-active-color, var(--dusk));
+  }
+  .rail-dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(45,55,72,0.18); flex-shrink: 0; }
+  .rail-dow { font-size: 8px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--stone-soft); line-height: 1; }
+  .rail-date { font-size: 10px; font-weight: 500; color: var(--stone); line-height: 1; }
+  .rail-cell.rail-active .rail-dow { color: var(--dusk); }
+  .rail-cell.rail-active .rail-date { color: var(--ink); font-weight: 600; }
+  .rail-cell.rail-outlook { opacity: 0.6; }
+  .rail-cell.rail-outlook.rail-active { opacity: 1; }
+  .rail-sep { width: 1px; align-self: stretch; background: var(--hairline); flex: 0 0 1px; }
+  .day-cal-scroll { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; padding: 10px 2px 8px; scroll-snap-type: x mandatory; }
+  .day-cal-scroll::-webkit-scrollbar { display: none; }
+  .day-pill {
+    flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 5px;
+    padding: 12px 14px 10px; border-radius: 18px; cursor: pointer; user-select: none;
+    background: var(--white); border: 1px solid var(--hairline-soft); box-shadow: var(--shadow-sm);
+    scroll-snap-align: start; transition: background 0.15s, border-color 0.15s, transform 0.12s, box-shadow 0.15s;
+    min-width: 66px; position: relative; outline: none;
+  }
+  .day-pill:hover { background: var(--pale-warm); border-color: rgba(45,55,72,0.12); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  .day-pill.active { background: var(--pill-active-bg, var(--dusk)); border-color: transparent; box-shadow: 0 4px 16px var(--pill-active-shadow, rgba(74,85,104,0.30)); transform: translateY(-1px); }
+  .day-pill-header { display: flex; align-items: baseline; gap: 4px; line-height: 1; }
+  .day-pill-dow { font-size: 9.5px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--stone); }
+  .day-pill-date { font-size: 9.5px; font-weight: 500; color: var(--stone); }
+  .day-pill.active .day-pill-dow, .day-pill.active .day-pill-date { color: rgba(255,255,255,0.65); }
+  .day-pill-swell { font-size: 22px; font-weight: 300; letter-spacing: -0.03em; color: var(--ink); line-height: 1; white-space: nowrap; }
+  .day-pill-swell em { font-style: normal; font-size: 10px; font-weight: 500; opacity: 0.7; margin-left: 2px; letter-spacing: 0; }
+  .day-pill.active .day-pill-swell { color: #ffffff !important; font-weight: 400; }
+  .day-pill-bar { width: 32px; height: 3px; border-radius: 2px; background: rgba(0,0,0,0.06); overflow: hidden; margin-top: 1px; }
+  .day-pill.active .day-pill-bar { background: rgba(255,255,255,0.18); }
+  .day-pill-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s cubic-bezier(0.4,0,0.2,1); }
+  .day-pill-swell.is-loading {
+    display: inline-block; width: 30px; height: 11px; border-radius: 4px;
+    background: linear-gradient(90deg, rgba(45,55,72,0.06) 25%, rgba(45,55,72,0.12) 50%, rgba(45,55,72,0.06) 75%);
+    background-size: 200% 100%; animation: shimmer 1.6s infinite;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .day-context-bar {
+    display: flex; align-items: center; gap: 10px; padding: 8px 14px;
+    background: rgba(74,85,104,0.05); border-radius: 10px; margin-top: 8px;
+    font-size: 12px; color: var(--stone); opacity: 0; transform: translateY(-3px);
+    transition: opacity 0.2s ease, transform 0.2s ease; pointer-events: none;
+  }
+  .day-context-bar.visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .day-context-bar strong { color: var(--dusk); font-weight: 500; }
+  .day-context-bar .ctx-swell { margin-left: auto; font-size: 11px; font-weight: 500; color: var(--dusk); background: rgba(139,168,190,0.18); padding: 3px 10px; border-radius: 8px; }
+  .day-context-bar .ctx-back { font-size: 11px; color: var(--stone-soft); cursor: pointer; text-decoration: underline; text-decoration-color: transparent; transition: color 0.15s, text-decoration-color 0.15s; }
+  .day-context-bar .ctx-back:hover { color: var(--stone); text-decoration-color: var(--stone-soft); }
+  .swell-chip { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 6px; font-weight: 500; }
+  .swell-flat    { background: rgba(45,55,72,0.06);   color: var(--stone); }
+  .swell-small   { background: rgba(240,200,8,0.28);  color: #7a6000; }
+  .swell-green   { background: rgba(74,162,46,0.28);  color: #2a6010; }
+  .swell-dkgreen { background: rgba(27,107,26,0.28);  color: #0d4a0c; }
+  .swell-big     { background: rgba(27,107,26,0.28);  color: #0d4a0c; }
+  .swell-orange  { background: rgba(232,146,10,0.28); color: #7a4a00; }
+  .swell-xxl     { background: rgba(192,57,43,0.28);  color: #6a1a10; }
+
+
 </style>
 </head>
 <body>
@@ -1976,6 +2108,29 @@
       <button class="loc-edit-toggle-btn" id="loc-edit-toggle" onclick="toggleEditMode()" title="Edit spots">✎</button>
     </div>
   </nav>
+
+  <!-- 10-Day Forecast Strip — collapsed by default, sits directly below location nav -->
+  <div class="day-cal-wrap is-collapsed" id="day-cal-wrap">
+    <div class="day-cal-header">
+      <div class="day-cal-label">10-day forecast</div>
+      <button class="collapse-toggle" id="collapse-toggle" onclick="forecastToggleCollapse()" aria-label="Expand forecast">
+        Expand
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <!-- Collapsed rail — always visible -->
+    <div class="day-cal-rail" id="day-cal-rail"></div>
+    <!-- Expanded pill row — revealed on expand -->
+    <div class="day-cal-expanded" id="day-cal-expanded">
+      <div class="day-cal-scroll" id="day-cal-scroll"></div>
+      <div class="day-context-bar" id="day-context-bar">
+        <span>Viewing</span>
+        <strong id="ctx-day-label">—</strong>
+        <span class="ctx-swell" id="ctx-swell-val">—</span>
+        <span class="ctx-back" onclick="forecastSelectDay(0)">← Today</span>
+      </div>
+    </div>
+  </div>
 
   <!-- Add Location Modal -->
   <div class="modal-overlay" id="add-modal" onclick="handleOverlayClick(event)">
@@ -2054,6 +2209,11 @@
       </div>
       <h1 id="header-title">The Needles <em>/ Cannon Beach</em></h1>
       <p class="updated" id="updated-time">Fetching live data…</p>
+      <span class="forecast-date-chip" id="forecast-date-chip" onclick="forecastSelectDay(0)" title="Back to today">
+        <span class="chip-dot"></span>
+        <span id="forecast-chip-label">—</span>
+        &nbsp;← today
+      </span>
     </div>
     <div class="header-right">
       <div class="conditions-badge conditions-fair" id="overall-badge">—</div>
@@ -2968,6 +3128,9 @@ function switchLocation(locId) {
   // Update photo gallery
   renderPhotoGallery(locId); // async, non-blocking
 
+  // Refresh 10-day forecast for the new location
+  if (window.refreshForecast) window.refreshForecast(currentLoc);
+
   // Update Windy iframe (respect lazy-load — only update live src if iframe is already loaded)
   const iframe = document.getElementById('windy-iframe');
   const { lat, lon, windyZoom } = currentLoc;
@@ -3057,7 +3220,7 @@ const fetchInFlight = {};
 
 async function fetchOpenMeteoMarine(loc) {
   const { lat, lon } = loc;
-  const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction,wind_wave_height,wind_wave_period,wind_wave_direction,sea_surface_temperature&timezone=America%2FLos_Angeles&forecast_days=2`;
+  const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction,wind_wave_height,wind_wave_period,wind_wave_direction,sea_surface_temperature&timezone=America%2FLos_Angeles&forecast_days=10`;
   const res = await fetch(url);
   if (!res.ok) {
     const txt = await res.text().catch(() => '');
@@ -3070,7 +3233,7 @@ async function fetchOpenMeteoMarine(loc) {
 
 async function fetchOpenMeteoWeather(loc) {
   const { lat, lon } = loc;
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles`;
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=temperature_2m,wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=America%2FLos_Angeles&forecast_days=10`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Weather API ${res.status}`);
   const data = await res.json();
@@ -3078,26 +3241,34 @@ async function fetchOpenMeteoWeather(loc) {
   return data;
 }
 
-async function fetchNOAATides(loc) {
+async function fetchNOAATides(loc, dayOffset = 0) {
   const { tideStation } = loc;
-  const now = new Date();
+  const base = new Date();
+  base.setDate(base.getDate() + dayOffset);
+  base.setHours(0, 0, 0, 0);
+  const end = new Date(base); end.setDate(end.getDate() + 1);
   const pad = n => String(n).padStart(2,'0');
-  const dateStr = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}`;
-  const tomorrow = new Date(now); tomorrow.setDate(tomorrow.getDate()+1);
-  const endStr = `${tomorrow.getFullYear()}${pad(tomorrow.getMonth()+1)}${pad(tomorrow.getDate())}`;
+  const fmt = d => `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}`;
+  const dateStr = fmt(base);
+  const endStr  = fmt(end);
 
-  const [predictionsRes, waterLevelRes] = await Promise.allSettled([
+  const isFuture = dayOffset > 0;
+
+  const requests = [
     fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?begin_date=${dateStr}&end_date=${endStr}&station=${tideStation}&product=predictions&datum=MLLW&time_zone=lst_ldt&interval=hilo&units=english&application=web_services&format=json`),
-    fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&station=${tideStation}&product=water_level&datum=MLLW&time_zone=lst_ldt&units=english&application=web_services&format=json`)
-  ]);
+  ];
+  if (!isFuture) {
+    requests.push(fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&station=${tideStation}&product=water_level&datum=MLLW&time_zone=lst_ldt&units=english&application=web_services&format=json`));
+  }
 
+  const results = await Promise.allSettled(requests);
   let predictions = null, waterLevel = null;
-  if (predictionsRes.status === 'fulfilled' && predictionsRes.value.ok) {
-    const d = await predictionsRes.value.json();
+  if (results[0].status === 'fulfilled' && results[0].value.ok) {
+    const d = await results[0].value.json();
     if (d.predictions) predictions = d.predictions;
   }
-  if (waterLevelRes.status === 'fulfilled' && waterLevelRes.value.ok) {
-    const d = await waterLevelRes.value.json();
+  if (!isFuture && results[1] && results[1].status === 'fulfilled' && results[1].value.ok) {
+    const d = await results[1].value.json();
     if (d.data && d.data[0]) waterLevel = parseFloat(d.data[0].v);
   }
   return { predictions, waterLevel };
@@ -3630,6 +3801,9 @@ async function loadAll() {
   }
 }
 
+// Cache of 10-day nav swell data per location, keyed by locId
+const navSwellCache = {};
+
 async function fetchNavSwells() {
   const now = new Date();
   const locIds = Object.keys(LOCATIONS);
@@ -3639,29 +3813,84 @@ async function fetchNavSwells() {
     const el = document.getElementById(`nav-swell-${locId}`);
     if (!el) return;
     try {
-      const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${loc.lat}&longitude=${loc.lon}&hourly=swell_wave_height,wind_wave_height&timezone=America%2FLos_Angeles&forecast_days=1`;
+      const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${loc.lat}&longitude=${loc.lon}&hourly=swell_wave_height,wind_wave_height&timezone=America%2FLos_Angeles&forecast_days=10`;
       const res = await fetch(url);
       if (!res.ok) throw new Error('failed');
       const data = await res.json();
 
+      // Cache the full hourly dataset for this location
+      navSwellCache[locId] = data;
+
+      // Show current-hour value (today, offset 0)
       const hours = data.hourly.time;
       let idx = 0;
       for (let i = 0; i < hours.length; i++) {
         if (new Date(hours[i]) <= now) idx = i;
         else break;
       }
-
       const swellH = parseFloat(data.hourly.swell_wave_height?.[idx]) || 0;
       const windH  = parseFloat(data.hourly.wind_wave_height?.[idx])  || 0;
-      const primaryM = Math.max(swellH, windH);
-      const ft = (primaryM * 3.28084).toFixed(1);
-
+      const ft = (Math.max(swellH, windH) * 3.28084).toFixed(1);
       el.classList.remove('loading-swell');
       el.innerHTML = `${ft}<em>ft</em>`;
     } catch(e) {
       el.innerHTML = '—';
     }
   }));
+}
+
+// Re-slice cached nav swell data to show peak swell for a given day offset.
+// Called whenever the user selects a forecast day.
+function updateNavSwellsForDay(dayOffset) {
+  const locIds = Object.keys(LOCATIONS);
+  locIds.forEach(locId => {
+    const el   = document.getElementById(`nav-swell-${locId}`);
+    const data = navSwellCache[locId];
+    if (!el) return;
+
+    if (dayOffset === 0) {
+      // Restore live current-hour value
+      if (!data) return;
+      const now   = new Date();
+      const hours = data.hourly.time;
+      let idx = 0;
+      for (let i = 0; i < hours.length; i++) {
+        if (new Date(hours[i]) <= now) idx = i;
+        else break;
+      }
+      const s = parseFloat(data.hourly.swell_wave_height?.[idx]) || 0;
+      const w = parseFloat(data.hourly.wind_wave_height?.[idx])  || 0;
+      el.classList.remove('loading-swell');
+      el.innerHTML = `${(Math.max(s, w) * 3.28084).toFixed(1)}<em>ft</em>`;
+      return;
+    }
+
+    if (!data) {
+      // No cache yet — mark as loading and fetch will arrive soon
+      el.classList.add('loading-swell');
+      return;
+    }
+
+    // Find peak swell across target day
+    const hours = data.hourly.time;
+    const target = new Date();
+    target.setDate(target.getDate() + dayOffset);
+    const dayStart = new Date(target); dayStart.setHours(0, 0, 0, 0);
+    const dayEnd   = new Date(target); dayEnd.setHours(23, 59, 59, 999);
+    let peak = null;
+    for (let i = 0; i < hours.length; i++) {
+      const t = new Date(hours[i]);
+      if (t >= dayStart && t <= dayEnd) {
+        const p = Math.max(
+          parseFloat(data.hourly.swell_wave_height?.[i]) || 0,
+          parseFloat(data.hourly.wind_wave_height?.[i])  || 0
+        );
+        if (peak === null || p > peak) peak = p;
+      }
+    }
+    el.classList.remove('loading-swell');
+    el.innerHTML = peak !== null ? `${(peak * 3.28084).toFixed(1)}<em>ft</em>` : '—';
+  });
 }
 
 // ─── Add Location Modal ────────────────────────────────────────────────────
@@ -4281,6 +4510,480 @@ document.addEventListener('visibilitychange', () => {
     loadAll();
   }
 });
+
+// ═══════════════════════════════════════════════════════════════════
+//  renderForDay — re-slice existing API data to a target day offset
+//  and re-render all dashboard modules to show forecast conditions
+// ═══════════════════════════════════════════════════════════════════
+
+// Tide cache for future days — keyed by `locId:dayOffset`
+const forecastTideCache = {};
+
+async function renderForDay(dayOffset) {
+  const locId = currentLocId;
+  const cached = dataCache[locId];
+
+  // Update header date chip
+  const chip      = document.getElementById('forecast-date-chip');
+  const chipLabel = document.getElementById('forecast-chip-label');
+
+  if (dayOffset === 0) {
+    chip && chip.classList.remove('visible');
+    // Restore live "Last updated" text
+    const ts = cached?.fetchedAt;
+    if (ts) document.getElementById('updated-time').textContent =
+      `Last updated ${new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
+    // Restore nav spot swell numbers to current hour
+    updateNavSwellsForDay(0);
+    // Re-render with today's data (live hour index)
+    if (cached) renderAll(cached);
+    return;
+  }
+
+  // Show header chip with selected date
+  const target = new Date();
+  target.setDate(target.getDate() + dayOffset);
+  const dateLabel = target.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  if (chipLabel) chipLabel.textContent = dateLabel;
+  chip && chip.classList.add('visible');
+  // Update "updated" line to show forecast context
+  document.getElementById('updated-time').textContent =
+    `Forecast · ${target.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`;
+  // Update nav spot swell numbers to reflect the selected forecast day
+  updateNavSwellsForDay(dayOffset);
+
+  if (!cached) return; // nothing to work with yet
+
+  const { marine, weather } = cached;
+
+  // ── Re-slice marine hourly data to target day's noon hour ─────────────
+  if (marine?.hourly) {
+    const hours = marine.hourly.time;
+    // Find the index closest to noon on the target day
+    const targetNoon = new Date(target);
+    targetNoon.setHours(12, 0, 0, 0);
+    let bestIdx = 0, bestDiff = Infinity;
+    for (let i = 0; i < hours.length; i++) {
+      const diff = Math.abs(new Date(hours[i]) - targetNoon);
+      if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
+    }
+
+    // Build a synthetic "current hour" version of renderSwellCards
+    renderSwellCardsAtIdx(marine, bestIdx);
+
+    // Chart: show 12h window centred on target day
+    const dayStart = new Date(target); dayStart.setHours(0, 0, 0, 0);
+    const dayEnd   = new Date(target); dayEnd.setHours(23, 59, 59, 999);
+    const indices  = [];
+    for (let i = 0; i < hours.length; i++) {
+      const t = new Date(hours[i]);
+      if (t >= dayStart && t <= dayEnd) indices.push(i);
+    }
+    renderSwellChartAtIndices(marine, indices);
+
+    // SST for the day
+    const sst = marine.hourly.sea_surface_temperature?.[bestIdx];
+    if (sst !== null && sst !== undefined) {
+      const wt = Math.round((sst * 9/5) + 32);
+      document.getElementById('water-temp').textContent = `${wt}°F`;
+      document.getElementById('water-temp-note').textContent =
+        wt < 50 ? 'Cold — 5/4 with boots recommended' :
+        wt < 54 ? 'Cool — 4/3 hooded + boots' : '4/3 territory — boots recommended';
+    }
+  }
+
+  // ── Re-slice weather hourly data for wind at target day noon ─────────
+  if (weather?.hourly) {
+    const hours = weather.hourly.time;
+    const targetNoon = new Date(target); targetNoon.setHours(12, 0, 0, 0);
+    let bestIdx = 0, bestDiff = Infinity;
+    for (let i = 0; i < hours.length; i++) {
+      const diff = Math.abs(new Date(hours[i]) - targetNoon);
+      if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
+    }
+    const syntheticWeather = {
+      current: {
+        temperature_2m:    weather.hourly.temperature_2m?.[bestIdx],
+        wind_speed_10m:    weather.hourly.wind_speed_10m?.[bestIdx],
+        wind_direction_10m: weather.hourly.wind_direction_10m?.[bestIdx],
+        wind_gusts_10m:    weather.hourly.wind_gusts_10m?.[bestIdx],
+      }
+    };
+    renderWind(syntheticWeather, null);
+    const airT = weather.hourly.temperature_2m?.[bestIdx];
+    if (airT !== undefined) {
+      document.getElementById('air-temp-card').textContent = `${Math.round(airT)}°F`;
+      document.getElementById('air-temp-header').textContent = `Air: ${Math.round(airT)}°F (forecast)`;
+    }
+
+    // Overall conditions badge using forecast data
+    if (marine?.hourly) {
+      const mHours = marine.hourly.time;
+      const mNoon  = new Date(target); mNoon.setHours(12,0,0,0);
+      let mi = 0, md = Infinity;
+      for (let i = 0; i < mHours.length; i++) {
+        const d = Math.abs(new Date(mHours[i]) - mNoon);
+        if (d < md) { md = d; mi = i; }
+      }
+      const wh = marine.hourly.swell_wave_height?.[mi];
+      const wp = marine.hourly.swell_wave_period?.[mi];
+      const wind = weather.hourly.wind_speed_10m?.[bestIdx];
+      const badge = document.getElementById('overall-badge');
+      if (wh) {
+        const ftH = wh * 3.28084;
+        let label = 'Fair', cls = 'conditions-fair';
+        if (ftH >= 2 && ftH <= 8 && wp >= 10 && wind < 15) { label = 'Good'; cls = 'conditions-good'; }
+        else if (ftH > 8 || wind > 20) { label = 'Heavy'; cls = 'conditions-poor'; }
+        badge.textContent = label + ' (forecast)';
+        badge.className = `conditions-badge ${cls}`;
+      }
+    }
+  }
+
+  // ── Tides: fetch for target date (cached after first fetch) ───────────
+  const tideKey = `${locId}:${dayOffset}`;
+  bannerLoad.style.display = '';
+  if (forecastTideCache[tideKey]) {
+    renderTidesForDay(forecastTideCache[tideKey], dayOffset);
+    bannerLoad.style.display = 'none';
+    // Add swell chip to banner
+    updateBannerChip(marine, dayOffset);
+  } else {
+    // Fetch in background, render when done (guard for location/day change)
+    fetchNOAATides(currentLoc, dayOffset).then(tideData => {
+      if (currentLocId !== locId) return; // location changed
+      forecastTideCache[tideKey] = tideData;
+      renderTidesForDay(tideData, dayOffset);
+      bannerLoad.style.display = 'none';
+      updateBannerChip(marine, dayOffset);
+    }).catch(() => { bannerLoad.style.display = 'none'; });
+  }
+}
+
+function updateBannerChip(marine, dayOffset) {
+  // No-op — chip is now part of the header date chip, nothing extra to update here
+}
+
+function forecastSwellRating(ft) {
+  if (ft === null || ft === undefined) return { label: '—', cls: 'swell-flat', color: null };
+  if (ft < 1)  return { label: 'Flat',  cls: 'swell-small',   color: '#F0C808' };
+  if (ft < 3)  return { label: 'Small', cls: 'swell-green',   color: '#4A9E2E' };
+  if (ft < 6)  return { label: 'Good',  cls: 'swell-dkgreen', color: '#1B6B1A' };
+  if (ft < 8)  return { label: 'Good',  cls: 'swell-big',     color: '#1B6B1A' };
+  if (ft < 10) return { label: 'Big',   cls: 'swell-orange',  color: '#E8920A' };
+  return              { label: 'XXL',   cls: 'swell-xxl',     color: '#C0392B' };
+}
+
+// Re-renders swell cards using a specific hourly index
+function renderSwellCardsAtIdx(marine, idx) {
+  const swA = {
+    height: parseFloat(marine.hourly.swell_wave_height?.[idx]) || 0,
+    period: parseFloat(marine.hourly.swell_wave_period?.[idx]) || null,
+    dir:    parseFloat(marine.hourly.swell_wave_direction?.[idx]),
+    label:  'Ground swell'
+  };
+  const swB = {
+    height: parseFloat(marine.hourly.wind_wave_height?.[idx]) || 0,
+    period: parseFloat(marine.hourly.wind_wave_period?.[idx]) || null,
+    dir:    parseFloat(marine.hourly.wind_wave_direction?.[idx]),
+    label:  'Wind swell'
+  };
+  const [primary, secondary] = swA.height >= swB.height ? [swA, swB] : [swB, swA];
+  const swells = [
+    { rank: 'Primary swell',   sub: primary.label,   height: primary.height,   period: primary.period,   dir: primary.dir,   el: 'primary-swell',   color: '#8ba8be' },
+    { rank: 'Secondary swell', sub: secondary.label, height: secondary.height, period: secondary.period, dir: secondary.dir, el: 'secondary-swell', color: '#a8be94' },
+  ];
+  swells.forEach(s => {
+    const el = document.getElementById(s.el);
+    const h = s.height && !isNaN(s.height) && s.height > 0 ? s.height : null;
+    const p = s.period && !isNaN(s.period) ? s.period : null;
+    const d = s.dir && !isNaN(s.dir) ? s.dir : null;
+    el.innerHTML = `
+      <div class="swell-rank">${s.rank}</div>
+      <div class="swell-height">
+        ${h !== null ? metersToFeetLabel(h) : '<span style="font-size:1.4rem;color:var(--stone)">—</span>'}
+      </div>
+      <div class="swell-stats" style="align-items:baseline;">
+        <div class="stat"><div class="stat-label">Period</div><div class="stat-value">${p !== null ? p.toFixed(0) + 's' : '—'}</div></div>
+        <div class="stat">
+          <div class="stat-label">Direction</div>
+          <div class="stat-value" style="display:flex;align-items:baseline;gap:4px;">
+            <span style="display:inline-flex;align-items:center;">${d !== null ? arrowSVG(d, s.color) : ''}</span>
+            <span>${d !== null ? dirToCardinal(d) : '—'}</span>
+          </div>
+        </div>
+        <div class="stat"><div class="stat-label">Degrees</div><div class="stat-value">${d !== null ? Math.round(d) + '°' : '—'}</div></div>
+      </div>
+      <div style="font-size:10px;color:var(--stone);opacity:0.6;margin-top:0.6rem;font-weight:400;">${s.sub}</div>
+    `;
+  });
+}
+
+// Re-renders swell chart using a specific set of indices (one day's worth of hours)
+function renderSwellChartAtIndices(marine, indices) {
+  if (!indices.length) return;
+  const hours   = marine.hourly.time;
+  const labels  = [], primary = [], secondary = [];
+  for (const i of indices) {
+    const t = new Date(hours[i]);
+    labels.push(t.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }));
+    const sw = parseFloat(marine.hourly.swell_wave_height?.[i]) || 0;
+    const ww = parseFloat(marine.hourly.wind_wave_height?.[i])  || 0;
+    primary.push(parseFloat(mToFt(Math.max(sw, ww))));
+    secondary.push(parseFloat(mToFt(Math.min(sw, ww))));
+  }
+  const canvas = document.getElementById('swellChart');
+  if (swellChart) { swellChart.destroy(); swellChart = null; }
+  swellChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Primary',   data: primary,   borderColor: '#8ba8be', backgroundColor: 'rgba(139,168,190,0.08)', borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#8ba8be', tension: 0.4, fill: true },
+        { label: 'Secondary', data: secondary, borderColor: '#a8be94', backgroundColor: 'rgba(168,190,148,0.06)', borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#a8be94', tension: 0.4, fill: false },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y !== null ? ctx.parsed.y.toFixed(1) + ' ft' : '—'}` } } },
+      scales: {
+        x: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { color: '#718096', font: { size: 11, family: 'DM Sans, Helvetica, sans-serif' } } },
+        y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { color: '#718096', font: { size: 11, family: 'DM Sans, Helvetica, sans-serif' }, callback: v => v + ' ft' }, beginAtZero: true }
+      }
+    }
+  });
+}
+
+// Renders tide module for a future date (predictions only, no live water level)
+function renderTidesForDay(tideData, dayOffset) {
+  const { predictions } = tideData;
+  // Build synthetic waterLevel: estimate from predictions (midway between surrounding highs/lows)
+  const syntheticData = { predictions, waterLevel: null };
+  renderTides(syntheticData, null);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  10-DAY FORECAST CALENDAR MODULE
+// ═══════════════════════════════════════════════════════════════════
+(function() {
+  const DAYS_SHORT   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  let forecastPeakSwells  = Array(10).fill(null);
+  let forecastSelectedDay = 0;
+  let forecastCollapsed   = true; // starts collapsed — rail is the primary view
+  let forecastLocId       = null;
+
+  function fSwellRating(ft) {
+    if (ft === null) return { label: '—',     cls: 'swell-flat',    color: null };
+    if (ft < 1)     return { label: 'Flat',   cls: 'swell-small',   color: '#F0C808' };
+    if (ft < 3)     return { label: 'Small',  cls: 'swell-green',   color: '#4A9E2E' };
+    if (ft < 6)     return { label: 'Good',   cls: 'swell-dkgreen', color: '#1B6B1A' };
+    if (ft < 8)     return { label: 'Good',   cls: 'swell-big',     color: '#1B6B1A' };
+    if (ft < 10)    return { label: 'Big',    cls: 'swell-orange',  color: '#E8920A' };
+    return               { label: 'XXL',    cls: 'swell-xxl',     color: '#C0392B' };
+  }
+
+  function fBarStyle(ft, isActive) {
+    if (isActive)    return 'background:rgba(255,255,255,0.65);';
+    if (ft === null) return 'background:rgba(45,55,72,0.1);';
+    const r = fSwellRating(ft);
+    return r.color ? `background:${r.color};` : 'background:rgba(45,55,72,0.1);';
+  }
+
+  function fHexRgba(hex, a) {
+    const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  async function fetchForecastData(loc) {
+    const now    = new Date();
+    const result = Array(10).fill(null);
+    const hourlyUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${loc.lat}&longitude=${loc.lon}&hourly=swell_wave_height,wind_wave_height&timezone=America%2FLos_Angeles&forecast_days=7`;
+    const dailyUrl  = `https://marine-api.open-meteo.com/v1/marine?latitude=${loc.lat}&longitude=${loc.lon}&daily=swell_wave_height_max,wind_wave_height_max&timezone=America%2FLos_Angeles&forecast_days=10`;
+    const [hourlyRes, dailyRes] = await Promise.allSettled([
+      fetch(hourlyUrl).then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch(dailyUrl).then(r => r.ok ? r.json() : null).catch(() => null),
+    ]);
+    const hourlyData = hourlyRes.value;
+    if (hourlyData?.hourly) {
+      const hours = hourlyData.hourly.time;
+      for (let d = 0; d < 7; d++) {
+        const dayStart = new Date(now); dayStart.setDate(dayStart.getDate()+d); dayStart.setHours(0,0,0,0);
+        const dayEnd   = new Date(dayStart); dayEnd.setHours(23,59,59,999);
+        let peak = null;
+        for (let i = 0; i < hours.length; i++) {
+          const t = new Date(hours[i]);
+          if (t >= dayStart && t <= dayEnd) {
+            const p = Math.max(parseFloat(hourlyData.hourly.swell_wave_height?.[i])||0, parseFloat(hourlyData.hourly.wind_wave_height?.[i])||0);
+            if (peak === null || p > peak) peak = p;
+          }
+        }
+        result[d] = peak;
+      }
+    }
+    const dailyData = dailyRes.value;
+    if (dailyData?.daily) {
+      const dates = dailyData.daily.time || [];
+      const sm    = dailyData.daily.swell_wave_height_max || [];
+      const wm    = dailyData.daily.wind_wave_height_max  || [];
+      for (let i = 0; i < dates.length; i++) {
+        const diffMs = new Date(dates[i]+'T12:00:00') - new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const d = Math.round(diffMs / 86400000);
+        if (d >= 7 && d < 10) {
+          const peak = Math.max(parseFloat(sm[i])||0, parseFloat(wm[i])||0);
+          if (peak > 0) result[d] = peak;
+        }
+      }
+    }
+    return result.some(v => v !== null) ? result : null;
+  }
+
+  function fBuildCalendar() {
+    const scroll = document.getElementById('day-cal-scroll');
+    if (!scroll) return;
+    const now  = new Date();
+    const maxM = Math.max(...forecastPeakSwells.filter(v => v !== null), 0.01);
+    scroll.innerHTML = '';
+    for (let d = 0; d < 10; d++) {
+      if (d === 7) {
+        const sep = document.createElement('div');
+        sep.style.cssText = 'flex:0 0 auto;width:1px;background:var(--hairline);border-radius:1px;align-self:stretch;margin:4px 2px;';
+        scroll.appendChild(sep);
+      }
+      const date    = new Date(now); date.setDate(date.getDate()+d);
+      const dow     = DAYS_SHORT[date.getDay()];
+      const dayNum  = date.getDate();
+      const swellM  = forecastPeakSwells[d];
+      const swellFt = swellM !== null ? swellM * 3.28084 : null;
+      const barW    = swellM !== null ? Math.max(4, Math.round((swellM/maxM)*100)) : 0;
+      const isActive = d === forecastSelectedDay;
+      const rating  = fSwellRating(swellFt);
+      const rc      = rating.color || '#4a5568';
+      const pill    = document.createElement('button');
+      pill.className = ['day-pill', isActive ? 'active' : ''].filter(Boolean).join(' ');
+      pill.dataset.offset = d; pill.dataset.ratingColor = rc;
+      pill.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+      if (isActive) { pill.style.setProperty('--pill-active-bg', rc); pill.style.setProperty('--pill-active-shadow', fHexRgba(rc, 0.35)); }
+      const swellHTML  = swellFt !== null ? `${swellFt.toFixed(1)}<em>ft</em>` : '';
+      const swellClass = swellFt !== null ? 'day-pill-swell' : 'day-pill-swell is-loading';
+      const swellColor = (!isActive && rating.color) ? `style="color:${rating.color};font-weight:400;"` : '';
+      pill.innerHTML = `
+        <div class="day-pill-header"><span class="day-pill-dow">${dow}</span><span class="day-pill-date">${dayNum}</span></div>
+        <span class="${swellClass}" ${swellColor}>${swellHTML}</span>
+        <div class="day-pill-bar"><div class="day-pill-bar-fill" style="width:${barW}%;${fBarStyle(swellFt,isActive)}"></div></div>
+      `;
+      pill.addEventListener('click', () => forecastSelectDay(d));
+      if (d >= 7) pill.style.opacity = '0.72';
+      scroll.appendChild(pill);
+    }
+    fUpdateContextBar();
+    fBuildRail();
+  }
+
+  window.forecastSelectDay = function(offset) {
+    forecastSelectedDay = Math.max(0, Math.min(9, offset));
+    document.querySelectorAll('.day-pill').forEach((pill, i) => {
+      const active = i === forecastSelectedDay;
+      pill.classList.toggle('active', active);
+      pill.setAttribute('aria-pressed', active ? 'true' : 'false');
+      if (active) {
+        const rc = pill.dataset.ratingColor || '#4a5568';
+        pill.style.setProperty('--pill-active-bg', rc); pill.style.setProperty('--pill-active-shadow', fHexRgba(rc, 0.35));
+        pill.style.opacity = '1';
+      } else {
+        pill.style.removeProperty('--pill-active-bg'); pill.style.removeProperty('--pill-active-shadow');
+        if (i >= 7) pill.style.opacity = '0.72'; else pill.style.opacity = '';
+      }
+      const fill = pill.querySelector('.day-pill-bar-fill');
+      if (fill) {
+        const sm = forecastPeakSwells[i];
+        const ft = sm !== null ? sm * 3.28084 : null;
+        fill.style.cssText = fill.style.cssText.replace(/background[^;]+;/,'') + fBarStyle(ft, active);
+      }
+    });
+    document.querySelectorAll('.day-pill')[forecastSelectedDay]
+      ?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    fUpdateContextBar();
+    fBuildRail();
+    // Update all dashboard modules for the selected day
+    renderForDay(forecastSelectedDay);
+  };
+
+  function fUpdateContextBar() {
+    const bar = document.getElementById('day-context-bar');
+    const labelEl = document.getElementById('ctx-day-label');
+    const swellEl = document.getElementById('ctx-swell-val');
+    if (!bar) return;
+    if (forecastSelectedDay === 0) { bar.classList.remove('visible'); return; }
+    const target = new Date(); target.setDate(target.getDate() + forecastSelectedDay);
+    labelEl.textContent = target.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    const sm = forecastPeakSwells[forecastSelectedDay];
+    const ft = sm !== null ? (sm * 3.28084).toFixed(1) : null;
+    swellEl.textContent = ft !== null ? `↑ ${ft} ft peak` : '—';
+    bar.classList.add('visible');
+  }
+
+  function fBuildRail() {
+    const rail = document.getElementById('day-cal-rail');
+    if (!rail) return;
+    rail.innerHTML = '';
+    for (let d = 0; d < 10; d++) {
+      if (d === 7) { const sep = document.createElement('div'); sep.className = 'rail-sep'; rail.appendChild(sep); }
+      const date    = new Date(); date.setDate(date.getDate()+d);
+      const sw      = forecastPeakSwells[d];
+      const ft      = sw !== null ? sw * 3.28084 : null;
+      const rating  = fSwellRating(ft);
+      const dotColor = rating.color || 'rgba(45,55,72,0.18)';
+      const isActive = d === forecastSelectedDay;
+      const cell    = document.createElement('div');
+      cell.className = ['rail-cell', isActive ? 'rail-active':'', d>=7?'rail-outlook':''].filter(Boolean).join(' ');
+      if (isActive) cell.style.setProperty('--rail-active-color', dotColor);
+      cell.innerHTML = `<div class="rail-dot" style="background:${dotColor};"></div><div class="rail-dow">${DAYS_SHORT[date.getDay()]}</div><div class="rail-date">${date.getDate()}</div>`;
+      cell.addEventListener('click', () => { forecastSelectDay(d); if (forecastCollapsed) window.forecastToggleCollapse(); });
+      rail.appendChild(cell);
+    }
+  }
+
+  window.forecastToggleCollapse = function() {
+    forecastCollapsed = !forecastCollapsed;
+    const wrap = document.getElementById('day-cal-wrap');
+    const btn  = document.getElementById('collapse-toggle');
+    if (!wrap || !btn) return;
+    wrap.classList.toggle('is-collapsed', forecastCollapsed);
+    const labelNode = btn.childNodes[0];
+    if (labelNode && labelNode.nodeType === Node.TEXT_NODE) {
+      labelNode.textContent = forecastCollapsed ? 'Expand' : 'Collapse';
+    }
+  };
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); forecastSelectDay(forecastSelectedDay + 1); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); forecastSelectDay(forecastSelectedDay - 1); }
+  });
+
+  window.refreshForecast = async function(loc) {
+    forecastPeakSwells  = Array(10).fill(null);
+    forecastSelectedDay = 0;
+    forecastLocId       = loc.id;
+    // Clear tide cache when switching locations
+    Object.keys(forecastTideCache).forEach(k => { if (!k.startsWith(loc.id+':')) delete forecastTideCache[k]; });
+    fBuildCalendar();
+    // Reset header date chip when location switches
+    const _chip = document.getElementById('forecast-date-chip');
+    if (_chip) _chip.classList.remove('visible');
+    document.getElementById('updated-time').textContent = 'Fetching live data…';
+    const result = await fetchForecastData(loc);
+    if (forecastLocId !== loc.id) return;
+    forecastPeakSwells = result || [1.6, 2.0, 2.1, 1.7, 1.2, 1.45, 1.65, 1.4, 0.85, 0.9];
+    fBuildCalendar();
+  };
+
+  fBuildCalendar();
+  fBuildRail();
+  setTimeout(() => window.refreshForecast(currentLoc), 0);
+})();
 </script>
 
 <!-- ════════════════════════════════════════════════════════
