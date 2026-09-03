@@ -21,6 +21,13 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 </noscript>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script>
+<script>
+  // Scrollbar-free viewport width for .full-bleed modules (100vw would include the scrollbar).
+  (function () {
+    var set = function () { document.documentElement.style.setProperty('--vw', document.documentElement.clientWidth + 'px'); };
+    set(); window.addEventListener('resize', set); window.addEventListener('orientationchange', set);
+  })();
+</script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -85,14 +92,27 @@
   .page {
     position: relative;
     z-index: 1;
-    max-width: 1100px;
+    max-width: var(--page-max, 1100px);
     margin: 0 auto;
-    padding: 3rem 2rem 4rem;
+    padding: 3rem var(--page-gutter, 2rem) 4rem;
+  }
+
+  /* ── Full-bleed: break a block out of the centered .page column to the full viewport width.
+     --vw is set from JS to the scrollbar-free viewport width; 100vw is the fallback.
+     --bleed is the distance from the viewport edge to the page content edge. ── */
+  :root { --vw: 100vw; --page-max: 1100px; --page-gutter: 2rem; }
+  @media (max-width: 700px) { :root { --page-gutter: 1rem; } }
+  .page .full-bleed {
+    /* no percentages here: scroll-padding resolves % against the scrollport, not the containing block */
+    --bleed: calc((var(--vw) - min(var(--vw), var(--page-max))) / 2 + var(--page-gutter));
+    width: var(--vw);
+    margin-left: calc(-1 * var(--bleed));
+    margin-right: calc(-1 * var(--bleed));
   }
 
   @media (max-width: 700px) {
     .page {
-      padding: 1.25rem 1rem 3rem;
+      padding: 1.25rem var(--page-gutter, 1rem) 3rem;
     }
   }
 
@@ -598,6 +618,7 @@
   }
   .section-inner {
     min-height: 0;
+    min-width: 0; /* grid item: without this a horizontally-scrolling child widens the item instead of scrolling */
     opacity: 1;
     transform: translateY(0);
     transition: opacity 0.3s ease 0.08s, transform 0.42s cubic-bezier(0.4,0,0.2,1);
@@ -823,7 +844,7 @@
     height: 70svh;
     min-height: 400px;
     max-height: 700px;
-    border-radius: 16px;
+    border-radius: 0; /* edge-to-edge, so no rounded corners */
     overflow: hidden;
     background: #000;
     margin-bottom: 0.25rem;
@@ -1730,9 +1751,11 @@
     overflow-x: auto;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    padding: 2px 2px 8px;
+    /* Strip spans the full viewport (.full-bleed); inner padding lines the first tile up with the
+       page content, and the tiles run out to the viewport edge as you scroll. */
+    padding: 2px calc(var(--bleed, 0px) + 2px) 8px;
     scroll-snap-type: x mandatory;
-    scroll-padding-left: 2px;
+    scroll-padding-left: calc(var(--bleed, 0px) + 2px);
   }
   .photo-strip::-webkit-scrollbar { display: none; }
 
@@ -2481,7 +2504,7 @@
 
   <div class="section-label" onclick="toggleSection('surfcams')">Surf cams<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><button class="section-popout-btn" onclick="event.stopPropagation();openSurfcamWindow()" title="Open cams in new window"><svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 1.5H2C1.72 1.5 1.5 1.72 1.5 2V8C1.5 8.28 1.72 8.5 2 8.5H8C8.28 8.5 8.5 8.28 8.5 8V6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M5.5 1.5H8.5V4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="8.5" y1="1.5" x2="5" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button></div>
   <div class="section-body" id="section-surfcams" style="margin-bottom:1.25rem;"><div class="section-inner">
-    <div class="surfcam-wrap">
+    <div class="surfcam-wrap full-bleed">
       <nav id="surfcam-layout-bar" role="toolbar" aria-label="Cam layout">
         <button class="surfcam-layout-btn" data-layout="scroll" title="Fullscreen scroll">
           <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="3.5" rx="0.75" fill="currentColor"/><rect x="1" y="6.25" width="14" height="3.5" rx="0.75" fill="currentColor"/><rect x="1" y="10.5" width="14" height="3.5" rx="0.75" fill="currentColor"/></svg>
@@ -2524,7 +2547,7 @@
 
   <div class="section-label" onclick="toggleSection('photos')">Photos<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><button class="section-photo-add" onclick="event.stopPropagation();triggerPhotoUpload()" title="Add your photos">+</button></div>
   <div class="section-body" id="section-photos" style="margin-bottom:1.25rem;"><div class="section-inner">
-    <div class="photo-strip" id="photo-strip"></div>
+    <div class="photo-strip full-bleed" id="photo-strip"></div>
   </div></div>
 
   <div class="section-label" onclick="toggleSection('swell')">Swell<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
@@ -2854,7 +2877,7 @@
 })();
 </script>
 
-<input type="file" id="photo-upload-input\" accept="image/*,image/heic,image/heif,.heic,.heif" multiple style="display:none" onchange="handlePhotoUpload(event)">
+<input type="file" id="photo-upload-input" accept="image/*,image/heic,image/heif,.heic,.heif" multiple style="display:none" onchange="handlePhotoUpload(event)">
 
 <div class="lightbox" id="lightbox" onclick="lbHandleBackdropClick(event)">
   <button class="lightbox-close" onclick="lbClose()" title="Close (Esc)">&#x2715;</button>
