@@ -2,22 +2,25 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f7f5f0">
 <title>Oregon Coast — Surf Conditions</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://marine-api.open-meteo.com" crossorigin>
 <link rel="preconnect" href="https://api.open-meteo.com" crossorigin>
 <link rel="preconnect" href="https://api.tidesandcurrents.noaa.gov" crossorigin>
-<link rel="preconnect" href="https://www.ndbc.noaa.gov" crossorigin>
+<link rel="dns-prefetch" href="https://www.ndbc.noaa.gov">
 <link rel="dns-prefetch" href="https://api.flickr.com">
 <link rel="dns-prefetch" href="https://live.staticflickr.com">
-<link rel="dns-prefetch" href="https://commons.wikimedia.org">
-<link rel="dns-prefetch" href="https://upload.wikimedia.org">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" media="print" onload="this.media='all'">
+<noscript>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js" defer></script>
+</noscript>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -54,7 +57,6 @@
     text-rendering: optimizeLegibility;
   }
 
-  /* Ambient background blobs */
   body::before {
     content: '';
     position: fixed;
@@ -65,6 +67,7 @@
     background: radial-gradient(ellipse, rgba(197,212,224,0.35) 0%, transparent 70%);
     pointer-events: none;
     z-index: 0;
+    transform: translateZ(0);
   }
   body::after {
     content: '';
@@ -76,6 +79,7 @@
     background: radial-gradient(ellipse, rgba(200,216,192,0.3) 0%, transparent 70%);
     pointer-events: none;
     z-index: 0;
+    transform: translateZ(0);
   }
 
   .page {
@@ -92,7 +96,6 @@
     }
   }
 
-  /* Header */
   .header {
     display: flex;
     align-items: flex-end;
@@ -233,7 +236,6 @@
     letter-spacing: 0.01em;
   }
 
-  /* Grid layout */
   .grid-2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -264,14 +266,12 @@
     margin-bottom: 1.25rem;
   }
 
-  /* Cards */
   .card {
     background: var(--white);
     border-radius: 20px;
     padding: 1.5rem 1.75rem;
     border: 1px solid var(--hairline-soft);
     box-shadow: var(--shadow-sm);
-    transition: box-shadow 0.2s ease;
   }
 
   .card-tinted {
@@ -279,7 +279,6 @@
     padding: 1.5rem 1.75rem;
     border: 1px solid var(--hairline-soft);
     box-shadow: var(--shadow-sm);
-    transition: box-shadow 0.2s ease;
   }
 
   .card-mist { background: rgba(197,212,224,0.25); }
@@ -308,7 +307,6 @@
     opacity: 0.6;
   }
 
-  /* Swell section */
   .swell-chart-wrap {
     position: relative;
     height: 200px;
@@ -336,7 +334,6 @@
     border-radius: 2px;
   }
 
-  /* Swell detail cards */
   .swell-rank {
     font-size: 10px;
     font-weight: 500;
@@ -353,6 +350,26 @@
     line-height: 1;
     margin-bottom: 0.2rem;
   }
+
+  .swell-height-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .swell-dir-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px 5px 6px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.55);
+    margin-bottom: 0.25rem;
+  }
+  .swell-dir-badge svg { display: block; flex-shrink: 0; }
+  .swell-dir-txt { font-size: 15px; font-weight: 500; color: var(--ink); line-height: 1; }
+  .swell-dir-txt em { display: block; font-style: normal; font-size: 10px; font-weight: 400; color: var(--stone); margin-top: 3px; letter-spacing: 0.04em; }
 
   .swell-unit {
     font-size: 0.9rem;
@@ -388,7 +405,6 @@
     color: var(--ink);
   }
 
-  /* Direction arrow */
   .direction-arrow {
     display: inline-block;
     width: 28px;
@@ -401,7 +417,6 @@
     height: 28px;
   }
 
-  /* Tide card */
   .tide-visual {
     position: relative;
     height: 90px;
@@ -464,7 +479,6 @@
   .incoming { background: rgba(197,212,224,0.4); color: #1a4060; }
   .outgoing { background: rgba(200,216,192,0.4); color: #1a4020; }
 
-  /* Buoy card */
   .buoy-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -501,7 +515,6 @@
     border-top: 1px solid rgba(0,0,0,0.06);
   }
 
-  /* Wind card */
   .wind-display {
     display: flex;
     align-items: center;
@@ -532,7 +545,6 @@
     margin-top: 4px;
   }
 
-  /* Section divider */
   .section-label {
     font-size: 11px;
     font-weight: 600;
@@ -576,27 +588,37 @@
   .section-toggle svg {
     width: 8px;
     height: 8px;
-    transition: transform 0.22s ease;
+    transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1);
   }
 
   .section-body {
-    overflow: hidden;
-    transition: max-height 0.3s ease, opacity 0.25s ease, margin 0.3s ease;
-    max-height: 2000px;
-    opacity: 1;
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: grid-template-rows 0.42s cubic-bezier(0.4,0,0.2,1), margin 0.42s cubic-bezier(0.4,0,0.2,1);
   }
-
+  .section-inner {
+    min-height: 0;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease 0.08s, transform 0.42s cubic-bezier(0.4,0,0.2,1);
+  }
   .section-body.collapsed {
-    max-height: 0;
-    opacity: 0;
+    grid-template-rows: 0fr;
     margin-bottom: 0 !important;
+  }
+  .section-body.collapsed .section-inner,
+  .section-body.is-animating .section-inner { overflow: hidden; }
+  .section-body.collapsed .section-inner {
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity 0.18s ease, transform 0.42s cubic-bezier(0.4,0,0.2,1);
+    pointer-events: none;
   }
 
   .section-label.collapsed .section-toggle svg {
     transform: rotate(-90deg);
   }
 
-  /* Photo add button inline with section label */
   .section-photo-add {
     width: 18px;
     height: 18px;
@@ -657,7 +679,74 @@
     display: block;
   }
 
-  /* Water temp */
+  /* ── Section reorder ─────────────────────────────────── */
+  .section-block { position: relative; }
+  .section-block.is-dragging { opacity: 0.4; }
+  .section-block.just-moved { animation: data-in 0.5s var(--ease-out) both; }
+  .section-reorder {
+    order: 1;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+  }
+  .section-label:hover .section-reorder,
+  .section-label:focus .section-reorder,
+  .section-label:focus-within .section-reorder,
+  .page.is-reordering .section-reorder { opacity: 1; pointer-events: auto; }
+  .reorder-btn, .reorder-grip {
+    height: 18px;
+    width: 18px;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.06);
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--stone);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, color 0.15s;
+  }
+  .reorder-btn svg { width: 8px; height: 8px; display: block; }
+  .reorder-grip { width: 22px; cursor: grab; touch-action: none; }
+  .reorder-grip svg { width: 10px; height: 10px; display: block; }
+  .reorder-btn:hover, .reorder-grip:hover { background: rgba(0,0,0,0.14); color: var(--ink); }
+  .reorder-btn:disabled { opacity: 0.3; cursor: default; }
+  .reorder-btn:disabled:hover { background: rgba(0,0,0,0.06); color: var(--stone); }
+  .page.is-reordering, .page.is-reordering * { cursor: grabbing !important; }
+  .page.is-reordering .section-label { color: var(--dusk); }
+  .reorder-indicator {
+    position: fixed;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--dusk);
+    pointer-events: none;
+    z-index: 900;
+    opacity: 0;
+    transition: opacity 0.12s;
+  }
+  .reorder-indicator::before {
+    content: '';
+    position: absolute;
+    left: -3px; top: -3px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--dusk);
+  }
+  .reorder-indicator.on { opacity: 1; }
+  .footer-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .reset-layout-btn { color: var(--stone); }
+  @media (hover: none) {
+    .section-reorder { opacity: 0.55; pointer-events: auto; }
+    .reorder-btn { width: 22px; height: 22px; }
+    .reorder-grip { width: 26px; height: 22px; }
+  }
+
   .water-temp-big {
     font-size: 3rem;
     font-weight: 300;
@@ -667,7 +756,6 @@
     margin: 0.5rem 0;
   }
 
-  /* Loading state */
   .loading {
     display: flex;
     align-items: center;
@@ -689,7 +777,6 @@
 
   .error-text { color: #c0392b; font-size: 13px; }
 
-  /* Location map embed */
   .surf-map-tooltip {
     background: var(--white);
     border: 1px solid var(--hairline-soft);
@@ -703,7 +790,6 @@
   }
   .surf-map-tooltip::before { display: none; }
 
-  /* Location map embed */
   .map-card {
     border-radius: 20px;
     overflow: hidden;
@@ -729,14 +815,12 @@
     .map-card { height: 240px; }
   }
 
-  /* Windy embed */
-  /* ════════════════════════════════
-     SURF CAMS SECTION
-  ════════════════════════════════ */
+  
   .surfcam-wrap {
     position: relative;
     width: 100%;
     height: 70vh;
+    height: 70svh;
     min-height: 400px;
     max-height: 700px;
     border-radius: 16px;
@@ -750,7 +834,6 @@
     height: 100%;
   }
 
-  /* Scroll layout */
   #surfcam-cams.layout-scroll {
     overflow-y: scroll;
     scroll-snap-type: y mandatory;
@@ -768,7 +851,6 @@
     border-top: 1px solid rgba(255,255,255,0.06);
   }
 
-  /* Grid layout */
   #surfcam-cams.layout-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -799,7 +881,8 @@
     #surfcam-cams.layout-grid .surfcam-slot + .surfcam-slot {
       border-top: 1px solid rgba(255,255,255,0.06);
     }
-    .surfcam-wrap { height: auto; max-height: none; }
+    .surfcam-wrap:has(#surfcam-cams.layout-grid) { height: auto; min-height: 0; max-height: none; }
+    .surfcam-wrap { min-height: 320px; }
   }
 
   .surfcam-slot video {
@@ -988,7 +1071,6 @@
     display: block;
   }
 
-  /* Footer */
   .footer {
     margin-top: 3.5rem;
     padding-top: 1.75rem;
@@ -1042,7 +1124,6 @@
     transform: scale(0.98);
   }
 
-  /* Skeleton shimmer */
   .skeleton {
     background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 75%);
     background-size: 200% 100%;
@@ -1056,7 +1137,6 @@
     100% { background-position: -200% 0; }
   }
 
-  /* Location nav */
   .loc-nav {
     display: flex;
     gap: 6px;
@@ -1166,7 +1246,6 @@
   .tag-reef { background: rgba(212,204,224,0.5); color: #3a2860; }
   .tag-custom { background: rgba(220,232,228,0.5); color: #1a4030; }
 
-  /* Tag edit popover */
   .tag-popover {
     position: fixed;
     z-index: 300;
@@ -1266,13 +1345,12 @@
   }
   .tag-popover-clear:hover { background: rgba(0,0,0,0.05); }
 
-  /* Make tag pill clickable in edit mode */
   .loc-nav.edit-mode .loc-btn-tag {
     cursor: pointer;
     transition: opacity 0.15s;
   }
   .loc-nav.edit-mode .loc-btn-tag:hover { opacity: 0.7; }
-  /* Show an "add tag" affordance when there's no tag in edit mode */
+  
   .loc-btn-tag-add {
     display: none;
     font-size: 9px;
@@ -1309,7 +1387,6 @@
     .loc-btn-sub { font-size: 9px; }
   }
 
-  /* Add / edit action column in nav */
   .loc-nav-actions {
     display: flex;
     flex-direction: column;
@@ -1329,7 +1406,6 @@
     }
   }
 
-  /* Add location button in nav */
   .loc-add-btn {
     display: flex;
     align-items: center;
@@ -1353,7 +1429,6 @@
     color: var(--ink);
   }
 
-  /* Edit toggle button in nav */
   .loc-edit-toggle-btn {
     display: flex;
     align-items: center;
@@ -1382,7 +1457,6 @@
     color: var(--dusk);
   }
 
-  /* Remove button shown during edit mode */
   .loc-btn-remove {
     display: none;
     position: absolute;
@@ -1406,7 +1480,6 @@
   .loc-btn-remove:hover { background: rgba(200,50,50,0.25); color: #c0392b; }
   .loc-btn { position: relative; }
 
-  /* Edit mode — wiggle animation + show remove buttons */
   .loc-nav.edit-mode .loc-btn {
     animation: wiggle 0.45s ease infinite alternate;
   }
@@ -1503,7 +1576,6 @@
   }
   .modal-close:hover { background: rgba(0,0,0,0.1); }
 
-  /* Form fields */
   .field-group {
     display: flex;
     flex-direction: column;
@@ -1544,7 +1616,6 @@
     margin-bottom: 1rem;
   }
 
-  /* Search results dropdown */
   .search-wrap { position: relative; }
 
   .search-results {
@@ -1581,7 +1652,6 @@
     font-style: italic;
   }
 
-  /* Coord note */
   .coord-note {
     font-size: 11px;
     color: var(--stone);
@@ -1590,7 +1660,6 @@
     font-weight: 300;
   }
 
-  /* Tide station field */
   .tide-station-wrap {
     position: relative;
   }
@@ -1605,7 +1674,6 @@
   .tide-station-status.found { color: #2d7a4a; }
   .tide-station-status.error { color: #c0392b; }
 
-  /* Add button */
   .modal-actions {
     display: flex;
     gap: 0.75rem;
@@ -1642,7 +1710,6 @@
   }
   .btn-secondary:hover { background: rgba(0,0,0,0.05); }
 
-  /* Divider in modal */
   .modal-divider {
     height: 1px;
     background: rgba(0,0,0,0.06);
@@ -1657,7 +1724,6 @@
     margin-bottom: 0.75rem;
   }
 
-  /* Photo gallery */
   .photo-strip {
     display: flex;
     gap: 12px;
@@ -1713,7 +1779,6 @@
     transform: scale(1.06);
   }
 
-  /* Subtle gradient overlay at the bottom for caption legibility */
   .photo-tile::after {
     content: '';
     position: absolute;
@@ -1776,7 +1841,6 @@
     cursor: default;
   }
 
-  /* Delete badge on user-uploaded tiles */
   .photo-tile-delete {
     display: none;
     position: absolute;
@@ -1802,7 +1866,6 @@
   .photo-tile.user-photo:hover .photo-tile-delete { display: flex; }
   .photo-tile-delete:hover { background: rgba(180,40,40,0.75); }
 
-  /* User photo badge */
   .photo-tile-user-badge {
     position: absolute;
     bottom: 8px;
@@ -1821,7 +1884,6 @@
 
   .photo-tile.img-loaded { cursor: zoom-in; }
 
-  /* Lightbox overlay */
   .lightbox {
     display: none;
     position: fixed;
@@ -1861,11 +1923,11 @@
     height: auto;
     border-radius: 10px;
     box-shadow: 0 24px 80px rgba(0,0,0,0.6);
-    transition: opacity 0.22s ease;
+    transition: opacity 0.22s ease, transform 0.35s cubic-bezier(0.2,0.8,0.2,1);
     object-fit: contain;
   }
 
-  .lightbox-img-wrap img.lb-loading { opacity: 0; }
+  .lightbox-img-wrap img.lb-loading { opacity: 0; transform: scale(0.96); }
 
   .lightbox-spinner {
     position: absolute;
@@ -1956,20 +2018,17 @@
     pointer-events: none;
   }
 
-  /* ── 10-Day Forecast Calendar Strip (below loc-nav) ─────────────────────── */
   #day-cal-wrap {
-    margin: 0.5rem 0 0.25rem;   /* small gap below nav */
+    margin: 0.5rem 0 0.25rem;   
     padding: 0;
     background: transparent;
   }
-  /* Rail always visible in collapsed state — acts as the primary glanceable view */
+  
   #day-cal-wrap .day-cal-header {
     padding: 5px 0 6px;
     margin-bottom: 4px;
-    border-bottom: 1px solid var(--hairline);
   }
 
-  /* ── 10-Day Forecast Calendar Module ─────────────────────────────────────── */
   .day-cal-wrap { position: relative; }
   .day-cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   .day-cal-label {
@@ -1986,15 +2045,26 @@
   .collapse-toggle:hover { background: rgba(45,55,72,0.05); color: var(--stone); }
   .collapse-toggle svg { transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); }
   .day-cal-wrap.is-collapsed .collapse-toggle svg { transform: rotate(-180deg); }
-  .day-cal-expanded { overflow: hidden; max-height: 200px; opacity: 1; transition: max-height 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.22s ease; }
-  .day-cal-wrap.is-collapsed .day-cal-expanded { max-height: 0; opacity: 0; pointer-events: none; }
+  .day-cal-stage { position: relative; overflow: hidden; transition: height 0.45s cubic-bezier(0.32, 0.72, 0, 1); }
+  .day-cal-stage.settled { overflow: visible; }
+  .day-cal-rail, .day-cal-expanded {
+    transform-origin: 50% 0;
+    transition: opacity 0.3s ease, transform 0.45s cubic-bezier(0.32, 0.72, 0, 1);
+  }
   .day-cal-rail {
-    display: flex; align-items: center; gap: 0; overflow: hidden; max-height: 0; opacity: 0;
-    transition: max-height 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.22s ease; pointer-events: none;
+    display: flex; align-items: center; gap: 0;
     border-radius: 12px; background: var(--white); border: 1px solid var(--hairline-soft); box-shadow: var(--shadow-sm);
     margin-bottom: 2px;
   }
-  .day-cal-wrap.is-collapsed .day-cal-rail { max-height: 56px; opacity: 1; pointer-events: auto; }
+  .day-cal-wrap:not(.is-collapsed) .day-cal-rail {
+    position: absolute; top: 0; left: 0; right: 0;
+    opacity: 0; transform: scaleY(0.6) translateY(-4px); pointer-events: none;
+  }
+  .day-cal-wrap.is-collapsed .day-cal-expanded {
+    position: absolute; top: 0; left: 0; right: 0;
+    opacity: 0; transform: scaleY(0.85) translateY(-6px); pointer-events: none;
+  }
+  .day-cal-expanded { transform: none; opacity: 1; }
   .rail-cell {
     flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 4px; padding: 8px 6px 7px; cursor: pointer; border-right: 1px solid var(--hairline-soft);
@@ -2033,6 +2103,18 @@
   .day-pill-swell { font-size: 22px; font-weight: 300; letter-spacing: -0.03em; color: var(--ink); line-height: 1; white-space: nowrap; }
   .day-pill-swell em { font-style: normal; font-size: 10px; font-weight: 500; opacity: 0.7; margin-left: 2px; letter-spacing: 0; }
   .day-pill.active .day-pill-swell { color: #ffffff !important; font-weight: 400; }
+  .day-pill-dir {
+    display: inline-flex; align-items: center; gap: 3px; min-height: 12px;
+    font-size: 9.5px; font-weight: 500; letter-spacing: 0.06em; color: var(--stone); line-height: 1;
+  }
+  .day-pill-dir svg { display: block; }
+  .day-pill.active .day-pill-dir { color: rgba(255,255,255,0.8); }
+  .rail-dir {
+    display: inline-flex; align-items: center; gap: 2px; min-height: 9px;
+    font-size: 8px; font-weight: 500; letter-spacing: 0.05em; color: var(--stone-soft); line-height: 1;
+  }
+  .rail-dir svg { display: block; }
+  .rail-cell.rail-active .rail-dir { color: var(--dusk); }
   .day-pill-bar { width: 32px; height: 3px; border-radius: 2px; background: rgba(0,0,0,0.06); overflow: hidden; margin-top: 1px; }
   .day-pill.active .day-pill-bar { background: rgba(255,255,255,0.18); }
   .day-pill-bar-fill { height: 100%; border-radius: 2px; transition: width 0.4s cubic-bezier(0.4,0,0.2,1); }
@@ -2062,6 +2144,189 @@
   .swell-orange  { background: rgba(232,146,10,0.28); color: #7a4a00; }
   .swell-xxl     { background: rgba(192,57,43,0.28);  color: #6a1a10; }
 
+  :root {
+    --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ease-spring: cubic-bezier(0.34, 1.3, 0.64, 1);
+  }
+
+  .loc-nav, .header, #day-cal-wrap {
+    animation: page-in 0.7s var(--ease-out) both;
+  }
+  .header { animation-delay: 0.08s; }
+  #day-cal-wrap { animation-delay: 0.14s; }
+  @keyframes page-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.6s var(--ease-out), transform 0.7s var(--ease-out);
+    transition-delay: calc(var(--i, 0) * 70ms);
+  }
+  .reveal.in { opacity: 1; transform: none; }
+  .section-label.reveal { transform: translateY(8px); }
+
+  .data-in { animation: data-in 0.5s var(--ease-out) both; }
+  @keyframes data-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .swell-height, .wind-number, .water-temp-big { font-variant-numeric: tabular-nums; }
+
+  .conditions-badge { transition: background 0.4s ease, color 0.4s ease, transform 0.35s var(--ease-spring); }
+  .conditions-badge.pop { animation: badge-pop 0.45s var(--ease-spring); }
+  @keyframes badge-pop {
+    0% { transform: scale(0.9); }
+    60% { transform: scale(1.06); }
+    100% { transform: none; }
+  }
+
+  .needle { transform-origin: 35px 35px; transform: rotate(var(--deg, 0deg)); }
+  .needle.swing { animation: needle-in 0.9s var(--ease-spring) both; }
+  @keyframes needle-in {
+    from { transform: rotate(calc(var(--deg, 0deg) - 60deg)); opacity: 0.3; }
+    to   { transform: rotate(var(--deg, 0deg)); opacity: 1; }
+  }
+  .dir-arrow { transform-origin: 14px 14px; transform: rotate(var(--deg, 0deg)); }
+  .dir-arrow.swing { animation: arrow-in 0.7s var(--ease-spring) both; }
+  @keyframes arrow-in {
+    from { transform: rotate(calc(var(--deg, 0deg) - 45deg)) scale(0.6); }
+    to   { transform: rotate(var(--deg, 0deg)) scale(1); }
+  }
+
+  .tide-direction-badge { animation: data-in 0.4s var(--ease-out) both; }
+  .tide-stat { transition: background 0.3s ease; }
+
+  .loc-btn:active, .day-pill:active, .rail-cell:active, .refresh-btn:active,
+  .btn-primary:active, .btn-secondary:active, .tag-preset-btn:active { transform: scale(0.97); }
+  .loc-btn.active { animation: loc-select 0.35s var(--ease-spring); }
+  @keyframes loc-select {
+    from { transform: scale(0.98); }
+    to   { transform: none; }
+  }
+  .loc-btn-swell:not(.loading-swell) { animation: data-in 0.4s var(--ease-out) both; }
+
+  .swell-chart {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .swell-chart svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .swell-chart .grid-line { stroke: rgba(45,55,72,0.06); stroke-width: 1; }
+  .swell-chart .axis-text { fill: #718096; font-size: 11px; font-family: 'DM Sans', Helvetica, sans-serif; }
+  .swell-chart .line {
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: draw-line 1.1s var(--ease-out) forwards;
+  }
+  .swell-chart .line.secondary { animation-delay: 0.15s; }
+  @keyframes draw-line { to { stroke-dashoffset: 0; } }
+  .swell-chart .area { opacity: 0; animation: area-in 0.8s ease 0.5s forwards; }
+  @keyframes area-in { to { opacity: 1; } }
+  .swell-chart .pt {
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(0);
+    animation: pt-in 0.35s var(--ease-spring) forwards;
+    animation-delay: calc(0.5s + var(--i, 0) * 45ms);
+  }
+  @keyframes pt-in { to { transform: scale(1); } }
+  .swell-chart .cursor { stroke: rgba(45,55,72,0.18); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0; transition: opacity 0.15s; }
+  .swell-chart .hit { fill: transparent; cursor: crosshair; touch-action: pan-y; }
+  .swell-chart.hover .cursor { opacity: 1; }
+  .swell-tip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    background: var(--white);
+    border: 1px solid var(--hairline-soft);
+    box-shadow: var(--shadow-md);
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: var(--ink);
+    line-height: 1.5;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translate(-50%, -110%) translateY(4px);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 5;
+  }
+  .swell-tip.show { opacity: 1; transform: translate(-50%, -110%); }
+  .swell-tip strong { display: block; font-weight: 500; color: var(--stone); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 1px; }
+  .swell-tip i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+  .swell-chart-empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: var(--stone);
+    padding: 0 1rem;
+  }
+
+  #surfcam-layout-bar { transition: opacity 0.3s ease, transform 0.4s var(--ease-spring); transform: translate(-50%, -6px); }
+  #surfcam-layout-bar.peek, .surfcam-wrap:hover #surfcam-layout-bar, #surfcam-layout-bar:hover { transform: translate(-50%, 0); }
+  .surfcam-loading.hidden { pointer-events: none; }
+  .surfcam-slot video { opacity: 0; transition: opacity 0.6s ease; }
+  .surfcam-slot video.playing { opacity: 1; }
+
+  .photo-tile { opacity: 0; transform: translateY(12px); }
+  .photo-tile.img-loaded, .photo-tile.photo-tile-loading { opacity: 1; transform: none; transition: opacity 0.45s var(--ease-out), transform 0.55s var(--ease-out), box-shadow 0.25s ease; }
+  .photo-tile.img-loaded:hover { transform: translateY(-2px); }
+
+  .lightbox-nav, .lightbox-close, .lightbox-counter { animation: data-in 0.3s var(--ease-out) 0.05s both; }
+
+  @media (hover: none) {
+    .surfcam-bar { opacity: 1; padding-bottom: 14px; }
+    .surfcam-expand-btn { opacity: 0.85; }
+    #surfcam-layout-bar { opacity: 1; transform: translate(-50%, 0); }
+    .section-popout-btn { opacity: 1; pointer-events: auto; }
+    .photo-tile.user-photo .photo-tile-delete { display: flex; }
+    .photo-tile.img-loaded::after { opacity: 1; }
+    .photo-tile:hover img { transform: none; }
+  }
+
+  @media (max-width: 700px) {
+    .lightbox-img-wrap { max-width: calc(100vw - 24px); max-height: calc(100dvh - 150px); }
+    .lightbox-img-wrap img { max-height: calc(100dvh - 150px); }
+    .lightbox-nav { top: auto; bottom: calc(2.5rem + env(safe-area-inset-bottom)); transform: none; width: 48px; height: 48px; }
+    .lightbox-prev { left: calc(50% - 64px); }
+    .lightbox-next { right: calc(50% - 64px); }
+    .lightbox-close { top: calc(1rem + env(safe-area-inset-top)); }
+    .lightbox-counter { top: calc(1.4rem + env(safe-area-inset-top)); }
+    .lightbox-caption { padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom)); font-size: 11px; }
+    .swell-tip { font-size: 10px; padding: 5px 8px; }
+    .section-toggle { width: 22px; height: 22px; }
+    .section-photo-add, .section-popout-btn { width: 22px; height: 22px; }
+    .tide-stats { gap: 0.4rem; }
+    .tide-stat { padding: 8px; }
+    .tide-stat-value { font-size: 14px; }
+    .page { padding-bottom: calc(3rem + env(safe-area-inset-bottom)); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+    .reveal { opacity: 1; transform: none; }
+    .swell-chart .line { stroke-dashoffset: 0; }
+    .swell-chart .area { opacity: 1; }
+    .swell-chart .pt { transform: none; }
+    .loc-nav.edit-mode .loc-btn { animation: none; }
+    .dot, .surfcam-dot { animation: none; }
+  }
 
 </style>
 </head>
@@ -2069,7 +2334,6 @@
 
 <div class="page">
 
-  <!-- Location Nav -->
   <nav class="loc-nav" id="loc-nav">
     <button class="loc-btn active" data-loc="cannon-beach" onclick="switchLocation('cannon-beach')">
       <span class="loc-btn-remove" onclick="removeLocation(event,'cannon-beach')" title="Remove">✕</span>
@@ -2109,7 +2373,6 @@
     </div>
   </nav>
 
-  <!-- 10-Day Forecast Strip — collapsed by default, sits directly below location nav -->
   <div class="day-cal-wrap is-collapsed" id="day-cal-wrap">
     <div class="day-cal-header">
       <div class="day-cal-label">10-day forecast</div>
@@ -2118,9 +2381,10 @@
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>
-    <!-- Collapsed rail — always visible -->
+    
+    <div class="day-cal-stage" id="day-cal-stage">
     <div class="day-cal-rail" id="day-cal-rail"></div>
-    <!-- Expanded pill row — revealed on expand -->
+    
     <div class="day-cal-expanded" id="day-cal-expanded">
       <div class="day-cal-scroll" id="day-cal-scroll"></div>
       <div class="day-context-bar" id="day-context-bar">
@@ -2130,15 +2394,14 @@
         <span class="ctx-back" onclick="forecastSelectDay(0)">← Today</span>
       </div>
     </div>
+    </div>
   </div>
 
-  <!-- Add Location Modal -->
   <div class="modal-overlay" id="add-modal" onclick="handleOverlayClick(event)">
     <div class="modal">
       <button class="modal-close" onclick="closeAddModal()">✕</button>
       <div class="modal-title">Add a location</div>
 
-      <!-- Place search -->
       <div class="field-group">
         <div class="field-label">Search for a spot</div>
         <div class="search-wrap">
@@ -2151,7 +2414,6 @@
       <div class="modal-divider"></div>
       <div class="modal-section-label">Location details</div>
 
-      <!-- Name + Area -->
       <div class="field-row">
         <div class="field-group" style="margin-bottom:0;">
           <div class="field-label">Spot name</div>
@@ -2163,7 +2425,6 @@
         </div>
       </div>
 
-      <!-- Coords -->
       <div class="field-row" style="margin-top:1rem;">
         <div class="field-group" style="margin-bottom:0;">
           <div class="field-label">Latitude</div>
@@ -2178,7 +2439,6 @@
       </div>
       <div class="coord-note">Coordinates auto-fill from search, or enter manually.</div>
 
-      <!-- Tide station -->
       <div class="field-group">
         <div class="field-label">NOAA Tide Station ID</div>
         <div class="tide-station-wrap">
@@ -2187,7 +2447,6 @@
         </div>
       </div>
 
-      <!-- NOAA Buoy -->
       <div class="field-group">
         <div class="field-label">NOAA Buoy ID <span style="font-weight:300;text-transform:none;letter-spacing:0;">(optional)</span></div>
         <input class="field-input" id="loc-buoy" type="text" placeholder="e.g. 46029" value="46029">
@@ -2200,7 +2459,6 @@
     </div>
   </div>
 
-  <!-- Header -->
   <div class="header">
     <div>
       <div class="location-pill">
@@ -2221,9 +2479,8 @@
     </div>
   </div>
 
-  <!-- Surf Cams — expanded by default, lazy-inits HLS on load -->
   <div class="section-label" onclick="toggleSection('surfcams')">Surf cams<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><button class="section-popout-btn" onclick="event.stopPropagation();openSurfcamWindow()" title="Open cams in new window"><svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 1.5H2C1.72 1.5 1.5 1.72 1.5 2V8C1.5 8.28 1.72 8.5 2 8.5H8C8.28 8.5 8.5 8.28 8.5 8V6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M5.5 1.5H8.5V4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="8.5" y1="1.5" x2="5" y2="5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></button></div>
-  <div class="section-body" id="section-surfcams" style="margin-bottom:1.25rem;">
+  <div class="section-body" id="section-surfcams" style="margin-bottom:1.25rem;"><div class="section-inner">
     <div class="surfcam-wrap">
       <nav id="surfcam-layout-bar" role="toolbar" aria-label="Cam layout">
         <button class="surfcam-layout-btn" data-layout="scroll" title="Fullscreen scroll">
@@ -2234,51 +2491,49 @@
         </button>
       </nav>
       <div id="surfcam-cams" class="layout-scroll">
-        <!-- Pacific City (HLS) -->
+        
         <div class="surfcam-slot" id="surfcam-slot-moment" data-label="Pacific City" data-type="hls" data-src="https://2-fss-2.themediacdn.com/pl_126/amlst:206100-2899404/playlist.m3u8">
           <div class="surfcam-loading" id="surfcam-moment-loading"><div class="surfcam-spinner"></div><div class="surfcam-loading-label">Connecting…</div></div>
           <video id="surfcam-moment-video" autoplay muted playsinline></video>
           <button class="surfcam-expand-btn" title="Open fullscreen"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
           <div class="surfcam-bar"><span class="surfcam-label">Pacific City</span><span class="surfcam-live"><span class="surfcam-dot"></span>Live</span></div>
         </div>
-        <!-- Kiwanda (HLS) -->
+        
         <div class="surfcam-slot" id="surfcam-slot-pelican" data-label="Kiwanda" data-type="hls" data-src="https://beachcam.pelicanbrewing.com/stream/53e4366f-8e2f-4252-a39d-1b4d0139db6a/channel/0/hls/live/index.m3u8">
           <div class="surfcam-loading" id="surfcam-pelican-loading"><div class="surfcam-spinner"></div><div class="surfcam-loading-label">Connecting…</div></div>
           <video id="surfcam-pelican-video" autoplay muted playsinline></video>
           <button class="surfcam-expand-btn" title="Open fullscreen"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
           <div class="surfcam-bar"><span class="surfcam-label">Kiwanda</span><span class="surfcam-live"><span class="surfcam-dot"></span>Live</span></div>
         </div>
-        <!-- Otter Rock (Surfline iframe) -->
+        
         <div class="surfcam-slot" id="surfcam-slot-otterrock" data-label="Otter Rock" data-type="iframe" data-src="https://embed.cdn-surfline.com/cams/5a0d9dfdc3367a001a914342/ca020a2a381494ffd1af795bd5e5c8ba828ffbef">
-          <iframe src="https://embed.cdn-surfline.com/cams/5a0d9dfdc3367a001a914342/ca020a2a381494ffd1af795bd5e5c8ba828ffbef" allowfullscreen allow="autoplay; fullscreen" title="Otter Rock Live Cam"></iframe>
+          <iframe data-src="https://embed.cdn-surfline.com/cams/5a0d9dfdc3367a001a914342/ca020a2a381494ffd1af795bd5e5c8ba828ffbef" loading="lazy" allowfullscreen allow="autoplay; fullscreen" title="Otter Rock Live Cam"></iframe>
           <button class="surfcam-expand-btn" title="Open fullscreen"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
           <div class="surfcam-bar"><span class="surfcam-label">Otter Rock</span><span class="surfcam-live"><span class="surfcam-dot"></span>Live</span></div>
         </div>
-        <!-- Westport / The Groins (HLS) -->
+        
         <div class="surfcam-slot" id="surfcam-slot-westport" data-label="The Groins" data-type="hls" data-src="https://2-fss-2.streamhoster.com/pl_126/203494-1423454-1/playlist.m3u8">
           <div class="surfcam-loading" id="surfcam-westport-loading"><div class="surfcam-spinner"></div><div class="surfcam-loading-label">Connecting…</div></div>
           <video id="surfcam-westport-video" autoplay muted playsinline></video>
           <button class="surfcam-expand-btn" title="Open fullscreen"><svg viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
           <div class="surfcam-bar"><span class="surfcam-label">The Groins</span><span class="surfcam-live"><span class="surfcam-dot"></span>Live</span></div>
         </div>
-      </div><!-- #surfcam-cams -->
-    </div><!-- .surfcam-wrap -->
-  </div><!-- #section-surfcams -->
+      </div>
+    </div>
+  </div></div>
 
-  <!-- Photo Gallery -->
   <div class="section-label" onclick="toggleSection('photos')">Photos<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><button class="section-photo-add" onclick="event.stopPropagation();triggerPhotoUpload()" title="Add your photos">+</button></div>
-  <div class="section-body" id="section-photos" style="margin-bottom:1.25rem;">
+  <div class="section-body" id="section-photos" style="margin-bottom:1.25rem;"><div class="section-inner">
     <div class="photo-strip" id="photo-strip"></div>
-  </div>
+  </div></div>
 
-  <!-- Swell Chart + Primary Swell card -->
   <div class="section-label" onclick="toggleSection('swell')">Swell<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
 
-  <div class="section-body" id="section-swell">
+  <div class="section-body" id="section-swell"><div class="section-inner">
     <div class="card" style="margin-bottom:1.25rem;">
       <div class="card-label"><div class="label-dot"></div>Swell components — height over 12 hours</div>
       <div class="swell-chart-wrap">
-        <canvas id="swellChart" role="img" aria-label="Swell height chart for primary and secondary swells">Loading swell data…</canvas>
+        <div id="swellChart" class="swell-chart" role="img" aria-label="Swell height chart for primary and secondary swells"></div>
       </div>
       <div class="swell-legend">
         <div class="legend-item"><div class="legend-swatch" style="background:#8ba8be;"></div>Primary</div>
@@ -2286,7 +2541,6 @@
       </div>
     </div>
 
-    <!-- Swell detail cards -->
     <div class="grid-2">
       <div class="card-tinted card-mist" id="primary-swell">
         <div class="swell-rank">Primary swell</div>
@@ -2297,13 +2551,12 @@
         <div class="loading"><div class="spinner"></div>Loading…</div>
       </div>
     </div>
-  </div>
+  </div></div>
 
-  <!-- Tide -->
   <div class="section-label" onclick="toggleSection('tides')">Tides<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
 
-  <div class="section-body" id="section-tides">
-    <div class="card-tinted card-foam" style="margin-bottom:1.25rem; border-radius:20px; padding:1.5rem 1.75rem; border:1px solid rgba(0,0,0,0.04);">
+  <div class="section-body" id="section-tides"><div class="section-inner">
+    <div class="card-tinted card-foam" style="margin-bottom:1.25rem;">
       <div class="card-label"><div class="label-dot"></div><span id="tide-station-label">Tide — Cannon Beach (Station 9437540 Tillamook Bay)</span></div>
       <div class="tide-visual">
         <canvas class="tide-canvas" id="tideCanvas" role="img" aria-label="Tide level visualization showing current level and trend"></canvas>
@@ -2315,21 +2568,20 @@
         <div class="tide-stat"><div class="tide-stat-label">Next Low</div><div class="tide-stat-value">—</div></div>
       </div>
     </div>
-  </div>
+  </div></div>
 
-  <!-- Wind + Buoy -->
   <div class="section-label" onclick="toggleSection('conditions')">Conditions<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
 
-  <div class="section-body" id="section-conditions">
+  <div class="section-body" id="section-conditions"><div class="section-inner">
     <div class="grid-2">
-      <div class="card-tinted card-lavender" style="border-radius:20px; padding:1.5rem 1.75rem; border:1px solid rgba(0,0,0,0.04);">
+      <div class="card-tinted card-lavender">
         <div class="card-label"><div class="label-dot"></div>Wind</div>
         <div class="wind-display" id="wind-display">
           <div class="loading"><div class="spinner"></div>Loading…</div>
         </div>
       </div>
 
-      <div class="card-tinted card-blush" style="border-radius:20px; padding:1.5rem 1.75rem; border:1px solid rgba(0,0,0,0.04);">
+      <div class="card-tinted card-blush">
         <div class="card-label"><div class="label-dot"></div>Buoy readings</div>
         <div id="buoy-display">
           <div class="loading"><div class="spinner"></div>Loading NOAA buoy…</div>
@@ -2337,7 +2589,6 @@
       </div>
     </div>
 
-    <!-- Water temp + Air temp -->
     <div class="grid-2">
       <div class="card">
         <div class="card-label"><div class="label-dot"></div>Water temperature</div>
@@ -2350,19 +2601,17 @@
         <div style="font-size:12px; color:var(--stone); margin-top:6px; font-weight:300;" id="air-temp-location">Cannon Beach, OR</div>
       </div>
     </div>
-  </div>
+  </div></div>
 
-  <!-- Map -->
   <div class="section-label" onclick="toggleSection('location-map')">Map<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-  <div class="section-body" id="section-location-map" style="margin-bottom:1.25rem;">
+  <div class="section-body" id="section-location-map" style="margin-bottom:1.25rem;"><div class="section-inner">
     <div class="map-card">
       <div id="location-map-div" style="width:100%;height:100%;"></div>
     </div>
-  </div>
+  </div></div>
 
-  <!-- Windy Map — lazy loaded on first expand -->
   <div class="section-label collapsed" onclick="toggleSection('map')">Wind & swell map<span class="section-toggle"><svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="#718096" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
-  <div class="section-body collapsed" id="section-map">
+  <div class="section-body collapsed" id="section-map"><div class="section-inner">
     <div class="windy-wrap">
       <iframe id="windy-iframe"
         data-src="https://embed.windy.com/embed2.html?lat=45.89&lon=-123.96&detailLat=45.89&detailLon=-123.96&width=650&height=450&zoom=9&level=surface&overlay=waves&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=true&metricWind=mph&metricTemp=%C2%B0F&radarRange=-1"
@@ -2370,9 +2619,8 @@
         allowfullscreen>
       </iframe>
     </div>
-  </div>
+  </div></div>
 
-  <!-- Footer -->
   <div class="footer">
     <div class="footer-sources">
       Data: <a href="https://www.ndbc.noaa.gov/station_page.php?station=46029" target="_blank">NOAA Buoy 46029 (Columbia River)</a> ·
@@ -2380,16 +2628,234 @@
       <a href="https://tidesandcurrents.noaa.gov/api/" target="_blank">NOAA Tides API</a> ·
       <a href="https://windy.com" target="_blank">Windy</a>
     </div>
-    <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+    <div class="footer-actions">
+      <button class="refresh-btn reset-layout-btn" id="reset-layout-btn" onclick="resetSectionOrder()" hidden title="Restore default section order">Reset layout</button>
+      <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+    </div>
   </div>
 
 </div>
 
+<script>
+/* ── Section reorder: move any section above/below another, drag to any position, persists per browser ── */
+(function () {
+  const ORDER_KEY = 'surf-section-order-v1';
+  const page = document.querySelector('.page');
+  if (!page) return;
 
-<!-- Hidden photo upload input — accepts all image types including iOS HEIC/HEIF -->
-<input type="file" id="photo-upload-input" accept="image/*,image/heic,image/heif,.heic,.heif" multiple style="display:none" onchange="handlePhotoUpload(event)">
+  // Wrap each label + body pair in a .section-block so it can be moved as one unit
+  const blocks = [];
+  document.querySelectorAll('.section-body').forEach(body => {
+    const label = body.previousElementSibling;
+    if (!label || !label.classList.contains('section-label')) return;
+    const id = body.id.replace(/^section-/, '');
+    const block = document.createElement('div');
+    block.className = 'section-block';
+    block.dataset.section = id;
+    label.parentNode.insertBefore(block, label);
+    block.appendChild(label);
+    block.appendChild(body);
+    blocks.push(block);
+  });
+  if (!blocks.length) return;
+  const DEFAULT_ORDER = blocks.map(b => b.dataset.section);
+  const container = blocks[0].parentNode;
 
-<!-- Lightbox -->
+  const getBlocks = () => Array.from(container.querySelectorAll(':scope > .section-block'));
+  const currentOrder = () => getBlocks().map(b => b.dataset.section);
+  const isDefault = () => currentOrder().join() === DEFAULT_ORDER.join();
+
+  function saveOrder() {
+    try {
+      if (isDefault()) localStorage.removeItem(ORDER_KEY);
+      else localStorage.setItem(ORDER_KEY, JSON.stringify(currentOrder()));
+    } catch (e) {}
+    updateControls();
+  }
+
+  function applyOrder(order) {
+    if (!Array.isArray(order)) return;
+    const byId = {}; getBlocks().forEach(b => byId[b.dataset.section] = b);
+    const seen = new Set();
+    const ordered = order.filter(id => byId[id] && !seen.has(id) && seen.add(id)).map(id => byId[id]);
+    DEFAULT_ORDER.forEach(id => { if (!seen.has(id)) ordered.push(byId[id]); }); // new sections go at the end
+    if (ordered.map(b => b.dataset.section).join() === currentOrder().join()) return;
+    const end = getBlocks().pop().nextSibling; // whatever follows the last section (the footer)
+    ordered.forEach(b => container.insertBefore(b, end));
+  }
+  const afterLastBlock = () => getBlocks().pop().nextSibling;
+
+  // Restore saved order before other scripts start loading iframes/cams
+  try { applyOrder(JSON.parse(localStorage.getItem(ORDER_KEY) || 'null')); } catch (e) {}
+
+  function afterMove(block) {
+    block.classList.remove('just-moved'); void block.offsetWidth; block.classList.add('just-moved');
+    setTimeout(() => block.classList.remove('just-moved'), 600);
+    if (block.dataset.section === 'location-map' && typeof _leafletMap !== 'undefined' && _leafletMap) {
+      setTimeout(() => _leafletMap.invalidateSize(), 60);
+    }
+    saveOrder();
+  }
+
+  // Move block. keepLabel: scroll so the moved section's label stays put on screen
+  // (used for button/keyboard moves; a drop lands where the indicator was, so no compensation needed).
+  function moveBlock(block, beforeNode, keepLabel) {
+    if (!block || block === beforeNode) return;
+    const label = block.querySelector('.section-label');
+    const topBefore = label.getBoundingClientRect().top;
+    container.insertBefore(block, beforeNode);
+    if (keepLabel) {
+      const topAfter = label.getBoundingClientRect().top;
+      if (Math.abs(topAfter - topBefore) > 1) window.scrollBy(0, topAfter - topBefore);
+    }
+    afterMove(block);
+  }
+
+  function moveUp(block) {
+    const prev = block.previousElementSibling;
+    if (prev && prev.classList.contains('section-block')) moveBlock(block, prev, true);
+  }
+  function moveDown(block) {
+    const next = block.nextElementSibling;
+    if (next && next.classList.contains('section-block')) moveBlock(block, next.nextSibling, true);
+  }
+
+  window.resetSectionOrder = function () {
+    if (isDefault()) return;
+    applyOrder(DEFAULT_ORDER);
+    getBlocks().forEach(afterMove);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  function updateControls() {
+    const list = getBlocks();
+    list.forEach((b, i) => {
+      const up = b.querySelector('.reorder-up'), down = b.querySelector('.reorder-down');
+      if (up) up.disabled = i === 0;
+      if (down) down.disabled = i === list.length - 1;
+    });
+    const reset = document.getElementById('reset-layout-btn');
+    if (reset) reset.hidden = isDefault();
+  }
+
+  // ── Controls in each label ──
+  const upSvg   = '<svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 5.5L4 2.5L7 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const downSvg = '<svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5L4 5.5L7 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const gripSvg = '<svg viewBox="0 0 10 10" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><circle cx="3.5" cy="2" r="1"/><circle cx="6.5" cy="2" r="1"/><circle cx="3.5" cy="5" r="1"/><circle cx="6.5" cy="5" r="1"/><circle cx="3.5" cy="8" r="1"/><circle cx="6.5" cy="8" r="1"/></svg>';
+
+  blocks.forEach(block => {
+    const label = block.querySelector('.section-label');
+    const wrap = document.createElement('span');
+    wrap.className = 'section-reorder';
+    wrap.innerHTML =
+      `<button class="reorder-btn reorder-up" type="button" title="Move up (Alt+↑)" aria-label="Move section up">${upSvg}</button>` +
+      `<button class="reorder-btn reorder-down" type="button" title="Move down (Alt+↓)" aria-label="Move section down">${downSvg}</button>` +
+      `<span class="reorder-grip" title="Drag to reorder" aria-hidden="true">${gripSvg}</span>`;
+    label.appendChild(wrap);
+    wrap.addEventListener('click', e => e.stopPropagation());
+    wrap.addEventListener('keydown', e => e.stopPropagation());
+    wrap.querySelector('.reorder-up').addEventListener('click', () => moveUp(block));
+    wrap.querySelector('.reorder-down').addEventListener('click', () => moveDown(block));
+
+    // Keyboard: Alt+Arrow on the focused label
+    label.addEventListener('keydown', e => {
+      if (!e.altKey) return;
+      if (e.key === 'ArrowUp')   { e.preventDefault(); moveUp(block);   label.focus(); }
+      if (e.key === 'ArrowDown') { e.preventDefault(); moveDown(block); label.focus(); }
+    });
+
+    // Drag (pointer events → mouse + touch). DOM is only touched on drop so iframes/cams don't reload mid-drag.
+    const grip = wrap.querySelector('.reorder-grip');
+    grip.addEventListener('pointerdown', e => startDrag(e, block));
+  });
+
+  const indicator = document.createElement('div');
+  indicator.className = 'reorder-indicator';
+  document.body.appendChild(indicator);
+
+  let drag = null;
+  function startDrag(e, block) {
+    if (e.button && e.button !== 0) return;
+    e.preventDefault();
+    drag = { block, target: null, pointerY: e.clientY, raf: 0 };
+    block.classList.add('is-dragging');
+    page.classList.add('is-reordering');
+    document.addEventListener('pointermove', onDragMove);
+    document.addEventListener('pointerup', endDrag);
+    document.addEventListener('pointercancel', endDrag);
+    document.addEventListener('keydown', onDragKey);
+    autoScrollLoop();
+    onDragMove(e);
+  }
+
+  function computeTarget(y) {
+    // Find the insertion point: before the first block whose vertical midpoint is below the pointer
+    const list = getBlocks().filter(b => b !== drag.block);
+    let before = null;
+    for (const b of list) {
+      const r = b.getBoundingClientRect();
+      if (y < r.top + r.height / 2) { before = b; break; }
+    }
+    return before; // null = after last block
+  }
+
+  function onDragMove(e) {
+    if (!drag) return;
+    drag.pointerY = e.clientY;
+    const before = computeTarget(e.clientY);
+    drag.target = before;
+    const list = getBlocks();
+    const own = drag.block;
+    // Hide the indicator when dropping here wouldn't change anything
+    const noop = (before === own.nextElementSibling) || (before === null && list[list.length - 1] === own);
+    if (noop) { indicator.classList.remove('on'); return; }
+    let r;
+    if (before) { r = before.getBoundingClientRect(); indicator.style.top = (r.top - 14) + 'px'; }
+    else { const last = list[list.length - 1]; r = last.getBoundingClientRect(); indicator.style.top = (r.bottom + 8) + 'px'; }
+    indicator.style.left = r.left + 'px';
+    indicator.style.width = r.width + 'px';
+    indicator.classList.add('on');
+  }
+
+  function autoScrollLoop() {
+    if (!drag) return;
+    const edge = 72, max = 18;
+    const y = drag.pointerY, h = window.innerHeight;
+    let dy = 0;
+    if (y < edge) dy = -Math.ceil((edge - y) / edge * max);
+    else if (y > h - edge) dy = Math.ceil((y - (h - edge)) / edge * max);
+    if (dy) { window.scrollBy(0, dy); onDragMove({ clientY: y }); }
+    drag.raf = requestAnimationFrame(autoScrollLoop);
+  }
+
+  function onDragKey(e) { if (e.key === 'Escape') endDrag(null); }
+
+  function endDrag(e) {
+    if (!drag) return;
+    const { block, target } = drag;
+    const cancelled = !e || e.type === 'pointercancel';
+    cancelAnimationFrame(drag.raf);
+    document.removeEventListener('pointermove', onDragMove);
+    document.removeEventListener('pointerup', endDrag);
+    document.removeEventListener('pointercancel', endDrag);
+    document.removeEventListener('keydown', onDragKey);
+    indicator.classList.remove('on');
+    page.classList.remove('is-reordering');
+    block.classList.remove('is-dragging');
+    drag = null;
+    if (cancelled) return;
+    const list = getBlocks();
+    const noop = (target === block.nextElementSibling) || (target === null && list[list.length - 1] === block);
+    if (noop) return;
+    moveBlock(block, target === null ? afterLastBlock() : target, false);
+  }
+
+  updateControls();
+})();
+</script>
+
+<input type="file" id="photo-upload-input\" accept="image/*,image/heic,image/heif,.heic,.heif" multiple style="display:none" onchange="handlePhotoUpload(event)">
+
 <div class="lightbox" id="lightbox" onclick="lbHandleBackdropClick(event)">
   <button class="lightbox-close" onclick="lbClose()" title="Close (Esc)">&#x2715;</button>
   <button class="lightbox-nav lightbox-prev" id="lb-prev" onclick="lbStep(-1)" title="Previous">&#x2039;</button>
@@ -2402,7 +2868,6 @@
   <div class="lightbox-caption" id="lb-caption"></div>
 </div>
 
-<!-- Tag edit popover -->
 <div class="tag-popover" id="tag-popover">
   <div class="tag-popover-title">Edit tag</div>
   <div class="tag-presets" id="tag-presets"></div>
@@ -2417,7 +2882,6 @@
 
 <script>
 
-// ─── Location definitions ─────────────────────────────────────────────────
 const LOCATIONS = {
   'cannon-beach': {
     id: 'cannon-beach',
@@ -2489,13 +2953,10 @@ const LOCATIONS = {
   },
 };
 
-// ─── Active location state ─────────────────────────────────────────────────
 let currentLocId = 'cannon-beach';
 let currentLoc = LOCATIONS[currentLocId];
-let swellChart = null;
 
-// ─── User photos (localStorage) ───────────────────────────────────────────
-const USER_PHOTOS_KEY = 'surf-user-photos'; // { [locId]: [ { dataUrl, name } ] }
+const USER_PHOTOS_KEY = 'surf-user-photos';
 
 function loadUserPhotos() {
   try { return JSON.parse(localStorage.getItem(USER_PHOTOS_KEY) || '{}'); } catch(e) { return {}; }
@@ -2517,7 +2978,6 @@ function getUserPhotosForLoc(locId) {
 
 function triggerPhotoUpload() {
   const input = document.getElementById('photo-upload-input');
-  // Stamp the current location on the input so the handler knows where to save
   input.dataset.locId = currentLocId;
   input.value = '';
   input.click();
@@ -2528,7 +2988,6 @@ function handlePhotoUpload(event) {
   const locId = event.target.dataset.locId || currentLocId;
   if (!files.length) return;
 
-  // Process all files in parallel — each renders as soon as it's ready
   files.forEach(file => processSinglePhoto(file, locId));
 }
 
@@ -2540,7 +2999,6 @@ function processSinglePhoto(file, locId) {
       const img = new Image();
       img.onload = () => {
         try {
-          // Downscale to max 1200px on longest side — keeps files ~150–300KB as JPEG
           const MAX = 1200;
           let w = img.naturalWidth  || img.width  || 800;
           let h = img.naturalHeight || img.height || 600;
@@ -2556,7 +3014,6 @@ function processSinglePhoto(file, locId) {
           saveAndRender(dataUrl);
         } catch (err) {
           if (isObjectUrl) URL.revokeObjectURL(sourceUrl);
-          // Canvas failed (e.g. tainted) — try raw FileReader as last resort
           readAsDataUrl(file, saveAndRender, () => {
             showPhotoError('Could not read photo. Try a different image.');
             resolve();
@@ -2586,7 +3043,6 @@ function processSinglePhoto(file, locId) {
       resolve();
     }
 
-    // All image types go through the canvas compression path
     const objUrl = URL.createObjectURL(file);
     compressAndSave(objUrl, true);
   });
@@ -2621,14 +3077,11 @@ function renderUserPhotoTiles(locId) {
   const strip = document.getElementById('photo-strip');
   if (!strip) return;
 
-  // If the gallery is still loading (has skeleton tiles but no real tiles yet),
-  // defer until renderPhotoGallery finishes — it calls us at the end anyway.
   const hasSkeletons = strip.querySelector('.photo-tile-loading');
   const hasRealTiles = strip.querySelector('.photo-tile:not(.photo-tile-loading):not(.user-photo)');
   const hasNoPhotoMsg = strip.querySelector('div:not(.photo-tile)');
   if (hasSkeletons && !hasRealTiles && !hasNoPhotoMsg) return;
 
-  // Remove existing user tiles so we can re-render fresh
   strip.querySelectorAll('.user-photo').forEach(el => el.remove());
 
   const photos = getUserPhotosForLoc(locId);
@@ -2672,7 +3125,6 @@ function renderUserPhotoTiles(locId) {
     fragment.appendChild(tile);
   });
 
-  // Prepend user photos before the first wikimedia tile
   const firstWikiTile = strip.querySelector('.photo-tile:not(.user-photo)');
   if (firstWikiTile) {
     strip.insertBefore(fragment, firstWikiTile);
@@ -2681,11 +3133,6 @@ function renderUserPhotoTiles(locId) {
   }
 }
 
-// ─── Photo gallery ─────────────────────────────────────────────────────────
-// Surf-focused queries per location. Flickr is the primary source — the surf
-// community tags heavily by break name. Wikimedia Commons is fallback.
-// Each entry has flickr tags (comma-separated, AND-matched) + a text query,
-// plus a wikimedia fallback query.
 const LOCATION_PHOTO_SEARCH = {
   'cannon-beach': {
     flickr: [
@@ -2725,7 +3172,6 @@ const LOCATION_PHOTO_SEARCH = {
   },
 };
 
-// Keywords that boost a result's score (surf / waves / beach / landscape)
 const PHOTO_BOOST_KEYWORDS = [
   'surf', 'surfing', 'surfer', 'wave', 'waves', 'swell', 'break',
   'beach', 'coast', 'coastline', 'shore', 'shoreline', 'ocean', 'sea',
@@ -2733,7 +3179,6 @@ const PHOTO_BOOST_KEYWORDS = [
   'longboard', 'shortboard', 'pointbreak', 'beachbreak',
 ];
 
-// Keywords that demote a result (portraits, weddings, non-surf content)
 const PHOTO_DEMOTE_KEYWORDS = [
   'wedding', 'portrait', 'selfie', 'family', 'baby', 'child', 'kids',
   'dog', 'pet', 'hotel', 'restaurant', 'room', 'menu', 'food',
@@ -2743,15 +3188,14 @@ const PHOTO_DEMOTE_KEYWORDS = [
 
 const PHOTOS_PER_PAGE = 6;
 
-// Per-location state: scored URLs, query tier, exhausted flag, loading flag
 const photoState = {};
 
 function getPhotoState(locId) {
   if (!photoState[locId]) {
     photoState[locId] = {
-      urls: [],           // already-shown photo URLs (dedup)
-      queryIdx: 0,        // which query tier we're on
-      gsrcontinue: null,  // wikimedia continuation token
+      urls: [],
+      queryIdx: 0,
+      gsrcontinue: null,
       exhausted: false,
       loading: false,
     };
@@ -2759,12 +3203,9 @@ function getPhotoState(locId) {
   return photoState[locId];
 }
 
-// Score a photo by title relevance. Higher = more likely to be surf/beach content.
-// Returns null if the photo should be excluded entirely (e.g. maps, diagrams).
 function scorePhoto(title, alt) {
   const text = (title + ' ' + (alt || '')).toLowerCase();
 
-  // Hard-exclude obvious non-photos regardless of query relevance
   if (/\b(map|diagram|chart|sign|logo|coat[- ]?of[- ]?arms|flag|coin|stamp|postcard|poster)\b/.test(text)) {
     return null;
   }
@@ -2776,21 +3217,17 @@ function scorePhoto(title, alt) {
   for (const kw of PHOTO_DEMOTE_KEYWORDS) {
     if (text.includes(kw)) score -= 3;
   }
-  // Slight boost for words that imply landscape photography
   if (/\b(view|panorama|scenic|aerial|seascape|horizon)\b/.test(text)) score += 1;
   return score;
 }
 
-// Get the list of search queries to try for a location, in order of preference
 function getSearchQueries(locId) {
   const cfg = LOCATION_PHOTO_SEARCH[locId];
   const loc = LOCATIONS[locId];
   const queries = [];
 
   if (cfg) {
-    // Prefer the wiki query (rich, surf-focused) first
     queries.push(cfg.wiki);
-    // Then use flickr-style short text queries as additional tiers
     if (cfg.flickr) {
       cfg.flickr.forEach(q => {
         if (q.text && !queries.includes(q.text)) queries.push(q.text);
@@ -2799,7 +3236,6 @@ function getSearchQueries(locId) {
   }
 
   if (loc) {
-    // Broad fallbacks for custom spots or when primary queries are exhausted
     const parts = [loc.name, loc.subtitle].filter(Boolean);
     queries.push(parts.join(' ') + ' surf');
     queries.push(parts.join(' ') + ' waves');
@@ -2816,12 +3252,10 @@ async function fetchCommonsPage(locId) {
   state.loading = true;
 
   const queries = getSearchQueries(locId);
-  // Overfetch so we can score/filter client-side and still return ~PHOTOS_PER_PAGE
   const batchSize = PHOTOS_PER_PAGE * 3;
   const scored = [];
 
   try {
-    // Try current query tier. If we exhaust it, move to the next.
     while (state.queryIdx < queries.length && scored.length < PHOTOS_PER_PAGE) {
       const query = queries[state.queryIdx];
       let url = `https://commons.wikimedia.org/w/api.php?action=query&generator=search&gsrnamespace=6&gsrsearch=${encodeURIComponent(query)}&gsrlimit=${batchSize}&prop=imageinfo&iiprop=url|thumburl|mediatype&iiurlwidth=600&format=json&origin=*`;
@@ -2837,27 +3271,23 @@ async function fetchCommonsPage(locId) {
         const mt = info.mediatype;
         if (mt !== 'BITMAP' && mt !== 'DRAWING') return;
         if (!info.thumburl) return;
-        // Dedup — skip if we've already shown or queued this url
         if (state.urls.includes(info.thumburl)) return;
 
         const alt = p.title.replace(/^File:/, '').replace(/\.[^.]+$/, '');
         const score = scorePhoto(p.title, alt);
-        if (score === null) return; // hard-excluded
+        if (score === null) return;
 
         scored.push({ url: info.thumburl, alt, score });
       });
 
       const cont = data?.continue?.gsroffset;
       if (cont) {
-        // More results available for this query tier
         state.gsrcontinue = cont;
       } else {
-        // Tier exhausted — move to next query
         state.queryIdx += 1;
         state.gsrcontinue = null;
       }
 
-      // If this tier gave us decent results, stop; otherwise try the next tier
       if (scored.length >= PHOTOS_PER_PAGE) break;
     }
 
@@ -2865,7 +3295,6 @@ async function fetchCommonsPage(locId) {
       state.exhausted = true;
     }
 
-    // Sort by score descending, take top N, then record urls for dedup
     scored.sort((a, b) => b.score - a.score);
     const top = scored.slice(0, PHOTOS_PER_PAGE);
     top.forEach(p => state.urls.push(p.url));
@@ -2894,7 +3323,6 @@ function appendPhotoTiles(locId, items, scrollToNew = false) {
     skeleton.className = 'photo-tile-skeleton';
     tile.appendChild(skeleton);
 
-    // Store source data on tile element for reliable lightbox access
     tile.dataset.photoUrl = url;
     tile.dataset.photoAlt = alt;
 
@@ -2902,7 +3330,6 @@ function appendPhotoTiles(locId, items, scrollToNew = false) {
     img.alt = alt;
     img.loading = 'lazy';
     img.decoding = 'async';
-    // First 2 tiles on initial load get high priority for faster LCP
     if (firstNewIndex + i < 2) {
       img.setAttribute('fetchpriority', 'high');
       img.loading = 'eager';
@@ -2915,7 +3342,6 @@ function appendPhotoTiles(locId, items, scrollToNew = false) {
     img.src = url;
     tile.appendChild(img);
 
-    // Click opens lightbox — index based on all tiles with data-photo-url
     tile.addEventListener('click', () => {
       const strip = document.getElementById('photo-strip');
       const allTiles = Array.from(strip.querySelectorAll('.photo-tile[data-photo-url]'));
@@ -2923,7 +3349,6 @@ function appendPhotoTiles(locId, items, scrollToNew = false) {
       lbOpen(idx >= 0 ? idx : 0);
     });
 
-    // Insert before the load-more button if present
     const loadMoreBtn = strip.querySelector('.photo-load-more');
     if (loadMoreBtn) strip.insertBefore(tile, loadMoreBtn);
     else strip.appendChild(tile);
@@ -2952,7 +3377,6 @@ function updateLoadMoreBtn(locId) {
     btn.innerHTML = `<button onclick="loadMorePhotos('${locId}')">Load more</button>`;
     strip.appendChild(btn);
   }
-  // Reset to idle state
   btn.querySelector('button').disabled = false;
   btn.querySelector('button').textContent = 'Load more';
 }
@@ -2964,7 +3388,7 @@ async function loadMorePhotos(locId) {
   if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
 
   const newItems = await fetchCommonsPage(locId);
-  if (currentLocId !== locId) return; // user switched while loading
+  if (currentLocId !== locId) return;
 
   if (newItems.length) appendPhotoTiles(locId, newItems, true);
   updateLoadMoreBtn(locId);
@@ -2973,14 +3397,13 @@ async function loadMorePhotos(locId) {
 async function renderPhotoGallery(locId) {
   const strip = document.getElementById('photo-strip');
   if (!strip) return;
+  _galleryStarted = true;
 
-  // Reset strip and state for this location
   strip.innerHTML = '';
   photoState[locId] = {
     urls: [], queryIdx: 0, gsrcontinue: null, exhausted: false, loading: false,
   };
 
-  // Show skeletons while first page loads
   for (let i = 0; i < PHOTOS_PER_PAGE; i++) {
     const tile = document.createElement('div');
     tile.className = 'photo-tile photo-tile-loading';
@@ -2993,7 +3416,6 @@ async function renderPhotoGallery(locId) {
   const items = await fetchCommonsPage(locId);
   if (currentLocId !== locId) return;
 
-  // Replace skeletons with real tiles
   strip.innerHTML = '';
 
   if (!items.length) {
@@ -3007,19 +3429,15 @@ async function renderPhotoGallery(locId) {
   renderUserPhotoTiles(locId);
 }
 
-// ─── Lightbox ──────────────────────────────────────────────────────────────
-let lbItems = [];   // { url, fullUrl, alt } — all loaded photos for current location
+let lbItems = [];
 let lbIndex = 0;
 
 function lbOpen(index) {
   const strip = document.getElementById('photo-strip');
   if (!strip) return;
-  // Read from data attributes — reliable regardless of img load state
   const tiles = strip.querySelectorAll('.photo-tile[data-photo-url]');
   lbItems = Array.from(tiles).map(tile => {
     const thumb = tile.dataset.photoUrl || '';
-    // Wikimedia thumb URLs look like: /600px-Filename.jpg
-    // Request a larger version by bumping the width
     const full = thumb.replace(/\/\d+px-/, '/1200px-');
     return { url: full, fallback: thumb, alt: tile.dataset.photoAlt || '' };
   });
@@ -3043,7 +3461,6 @@ function lbShow(index) {
   const prevBtn   = document.getElementById('lb-prev');
   const nextBtn   = document.getElementById('lb-next');
 
-  // Loading state
   imgEl.classList.add('lb-loading');
   spinner.style.display = 'flex';
 
@@ -3052,7 +3469,6 @@ function lbShow(index) {
     spinner.style.display = 'none';
   };
   imgEl.onerror = () => {
-    // Fall back to original thumbnail if larger version fails
     if (item.fallback && imgEl.src !== item.fallback) {
       imgEl.src = item.fallback;
     } else {
@@ -3087,7 +3503,6 @@ function lbHandleBackdropClick(e) {
   if (e.target === document.getElementById('lightbox')) lbClose();
 }
 
-// Keyboard navigation
 document.addEventListener('keydown', (e) => {
   const lb = document.getElementById('lightbox');
   if (lb.classList.contains('open')) {
@@ -3102,36 +3517,28 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-
 function switchLocation(locId) {
   if (locId === currentLocId) return;
   currentLocId = locId;
   currentLoc = LOCATIONS[locId];
 
-  // Update nav buttons
   document.querySelectorAll('.loc-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.loc === locId);
   });
 
-  // Update header
   document.getElementById('header-coords').textContent = currentLoc.coordLabel;
   const titleEl = document.getElementById('header-title');
   if (titleEl) titleEl.innerHTML = currentLoc.titleHTML || currentLoc.name;
 
-  // Update tide label
   document.getElementById('tide-station-label').textContent =
     `Tide — ${currentLoc.name} (Station ${currentLoc.tideStation} ${currentLoc.tideLabel})`;
 
-  // Update air temp location label
   document.getElementById('air-temp-location').textContent = currentLoc.airTempLabel;
 
-  // Update photo gallery
-  renderPhotoGallery(locId); // async, non-blocking
+  renderPhotoGallery(locId);
 
-  // Refresh 10-day forecast for the new location
   if (window.refreshForecast) window.refreshForecast(currentLoc);
 
-  // Update Windy iframe (respect lazy-load — only update live src if iframe is already loaded)
   const iframe = document.getElementById('windy-iframe');
   const { lat, lon, windyZoom } = currentLoc;
   const newWindySrc = `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&detailLat=${lat}&detailLon=${lon}&width=650&height=450&zoom=${windyZoom}&level=surface&overlay=waves&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=true&metricWind=mph&metricTemp=%C2%B0F&radarRange=-1`;
@@ -3141,21 +3548,17 @@ function switchLocation(locId) {
     iframe.dataset.src = newWindySrc;
   }
 
-  // Update location map
   updateLocationMap(lat, lon);
 
   const cached = dataCache[locId];
   if (cached) {
-    // Instant render from cache — no loading spinners
     renderAll(cached);
     document.getElementById('updated-time').textContent =
       `Updated ${new Date(cached.fetchedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
     document.getElementById('overall-badge').className = 'conditions-badge conditions-fair';
     setOverallConditions(cached.marine, cached.weather);
-    // Silently refresh in background if stale (>15 min)
     if (Date.now() - cached.fetchedAt > 15 * 60 * 1000) loadAll();
   } else {
-    // Not yet cached — show loading state and fetch
     document.getElementById('updated-time').textContent = 'Fetching live data…';
     document.getElementById('overall-badge').textContent = '—';
     document.getElementById('overall-badge').className = 'conditions-badge conditions-fair';
@@ -3191,10 +3594,11 @@ function msToMph(ms) { return (ms * 2.23694).toFixed(0); }
 function cToF(c) { return ((c * 9/5) + 32).toFixed(0); }
 function metersToFeetLabel(m) { return `${mToFt(m)} ft`; }
 
-function arrowSVG(deg, color) {
-  return `<svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
-    <g transform="rotate(${deg},14,14)">
-      <polygon points="14,4 18,20 14,17 10,20" fill="${color}" opacity="0.8"/>
+function arrowSVG(deg, color, size = 28, animate = true) {
+  const travel = (deg + 180) % 360;
+  return `<svg viewBox="0 0 28 28" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g class="dir-arrow${animate && !RENDER_QUIET ? ' swing' : ''}" style="--deg:${travel}deg">
+      <polygon points="14,4 18,20 14,17 10,20" fill="${color}" opacity="0.85"/>
     </g>
   </svg>`;
 }
@@ -3206,16 +3610,14 @@ function windCompassSVG(deg) {
     <text x="35" y="65" text-anchor="middle" fill="#718096" font-size="8" font-family="DM Sans,Helvetica,sans-serif">S</text>
     <text x="8" y="38" text-anchor="middle" fill="#718096" font-size="8" font-family="DM Sans,Helvetica,sans-serif">W</text>
     <text x="63" y="38" text-anchor="middle" fill="#718096" font-size="8" font-family="DM Sans,Helvetica,sans-serif">E</text>
-    <g transform="rotate(${deg},35,35)">
+    <g class="needle${RENDER_QUIET ? '' : ' swing'}" style="--deg:${deg}deg">
       <polygon points="35,12 39,38 35,33 31,38" fill="#8ba8be"/>
       <polygon points="35,58 39,32 35,37 31,32" fill="rgba(0,0,0,0.15)"/>
     </g>
   </svg>`;
 }
 
-// ─── Data cache: keyed by locId ────────────────────────────────────────────
 const dataCache = {};
-// Tracks in-flight fetch promises per locId so we never double-fetch
 const fetchInFlight = {};
 
 async function fetchOpenMeteoMarine(loc) {
@@ -3289,7 +3691,6 @@ async function fetchNOAABuoy(loc) {
       const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
       if (res.ok) {
         const t = await res.text();
-        // Sanity-check: NDBC files start with '#YY' header
         if (t && t.includes('WVHT')) { text = t; break; }
       }
     } catch(e) { continue; }
@@ -3297,7 +3698,6 @@ async function fetchNOAABuoy(loc) {
   if (!text) throw new Error('Buoy fetch failed');
   const lines = text.trim().split('\n');
   const headers = lines[0].replace(/^#\s*/, '').split(/\s+/);
-  // Skip the units row (line index 1), use first data row (line index 2)
   const latest = lines[2].split(/\s+/);
   const get = (name) => {
     const i = headers.indexOf(name);
@@ -3314,7 +3714,6 @@ async function fetchNOAABuoy(loc) {
   };
 }
 
-// Fetch all data for a given location and store in cache
 async function fetchLocData(locId) {
   const loc = LOCATIONS[locId];
   const [marineRes, weatherRes, tideRes, buoyRes] = await Promise.allSettled([
@@ -3337,25 +3736,145 @@ async function fetchLocData(locId) {
   return dataCache[locId];
 }
 
-// Returns cached data immediately if fresh, otherwise awaits a fetch
 async function getLocData(locId) {
-  const CACHE_TTL = 30 * 60 * 1000; // 30 min
+  const CACHE_TTL = 30 * 60 * 1000;
   const cached = dataCache[locId];
   if (cached && (Date.now() - cached.fetchedAt) < CACHE_TTL) return cached;
-  // Deduplicate: if already in flight, wait for that promise
   if (!fetchInFlight[locId]) {
     fetchInFlight[locId] = fetchLocData(locId).finally(() => { delete fetchInFlight[locId]; });
   }
   return fetchInFlight[locId];
 }
 
-// Prefetch all locations in the background (non-blocking)
 function prefetchAllLocations() {
   Object.keys(LOCATIONS).forEach(locId => {
     if (!dataCache[locId] && !fetchInFlight[locId]) {
-      getLocData(locId).catch(() => {}); // silent — errors logged inside fetchLocData
+      getLocData(locId).catch(() => {});
     }
   });
+}
+
+
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let RENDER_QUIET = false;
+
+function animateIn(el) {
+  if (!el || RENDER_QUIET || REDUCED_MOTION) return;
+  el.classList.remove('data-in');
+  void el.offsetWidth;
+  el.classList.add('data-in');
+}
+
+const _tweens = {};
+function tweenNumber(el, key, to, format, duration = 650) {
+  if (!el) return;
+  if (REDUCED_MOTION || !isFinite(to)) { el.textContent = format(to); _tweens[key] = { value: to }; return; }
+  const prev = _tweens[key];
+  const from = prev && isFinite(prev.value) ? prev.value : 0;
+  if (prev && prev.raf) cancelAnimationFrame(prev.raf);
+  const state = { value: from, raf: 0 };
+  _tweens[key] = state;
+  const t0 = performance.now();
+  const step = (t) => {
+    const p = Math.min(1, (t - t0) / duration);
+    const e = 1 - Math.pow(1 - p, 3);
+    state.value = from + (to - from) * e;
+    el.textContent = format(state.value);
+    if (p < 1) state.raf = requestAnimationFrame(step);
+    else { state.value = to; el.textContent = format(to); }
+  };
+  state.raf = requestAnimationFrame(step);
+}
+
+let _swellChartData = null;
+function drawSwellChart(labels, primary, secondary) {
+  const wrap = document.getElementById('swellChart');
+  if (!wrap) return;
+  _swellChartData = { labels, primary, secondary };
+  const W = wrap.clientWidth || 600;
+  const H = wrap.clientHeight || 200;
+  const padL = 34, padR = 10, padT = 12, padB = 24;
+  const iw = W - padL - padR, ih = H - padT - padB;
+  const n = labels.length;
+  const maxV = Math.max(1, ...primary, ...secondary);
+  const rawStep = (maxV * 1.15) / 4;
+  const mag = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(v => v >= rawStep);
+  const ticks = Math.max(2, Math.ceil((maxV * 1.15) / step));
+  const yMax = step * ticks;
+  const xs = i => padL + (n > 1 ? (i / (n - 1)) * iw : iw / 2);
+  const ys = v => padT + ih - (v / yMax) * ih;
+
+  const smooth = (arr) => {
+    if (!arr.length) return '';
+    let d = `M${xs(0).toFixed(1)},${ys(arr[0]).toFixed(1)}`;
+    for (let i = 1; i < arr.length; i++) {
+      const x0 = xs(i - 1), y0 = ys(arr[i - 1]), x1 = xs(i), y1 = ys(arr[i]);
+      const cx = ((x0 + x1) / 2).toFixed(1);
+      d += ` C${cx},${y0.toFixed(1)} ${cx},${y1.toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`;
+    }
+    return d;
+  };
+
+  let grid = '';
+  for (let t = 0; t <= ticks; t++) {
+    const v = step * t;
+    const y = ys(v).toFixed(1);
+    grid += `<line class="grid-line" x1="${padL}" x2="${W - padR}" y1="${y}" y2="${y}"/>`;
+    grid += `<text class="axis-text" x="${padL - 8}" y="${+y + 4}" text-anchor="end">${step < 1 ? v.toFixed(1) : Math.round(v)} ft</text>`;
+  }
+  const every = n > 8 && W < 480 ? 2 : 1;
+  let xlab = '';
+  labels.forEach((l, i) => {
+    if (i % every) return;
+    xlab += `<text class="axis-text" x="${xs(i).toFixed(1)}" y="${H - 6}" text-anchor="middle">${l.replace(' ', '')}</text>`;
+  });
+
+  const pPath = smooth(primary), sPath = smooth(secondary);
+  const area = `${pPath} L${xs(n - 1).toFixed(1)},${(padT + ih).toFixed(1)} L${xs(0).toFixed(1)},${(padT + ih).toFixed(1)} Z`;
+  let pts = '';
+  primary.forEach((v, i) => { pts += `<circle class="pt" style="--i:${i}" cx="${xs(i).toFixed(1)}" cy="${ys(v).toFixed(1)}" r="3" fill="#8ba8be"/>`; });
+  secondary.forEach((v, i) => { pts += `<circle class="pt" style="--i:${i + 2}" cx="${xs(i).toFixed(1)}" cy="${ys(v).toFixed(1)}" r="2.5" fill="#a8be94"/>`; });
+
+  wrap.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+    ${grid}${xlab}
+    <path class="area" d="${area}" fill="rgba(139,168,190,0.10)"/>
+    <path class="line secondary" pathLength="1" d="${sPath}" stroke="#a8be94"/>
+    <path class="line primary" pathLength="1" d="${pPath}" stroke="#8ba8be"/>
+    ${pts}
+    <line class="cursor" x1="0" x2="0" y1="${padT}" y2="${padT + ih}"/>
+    <rect class="hit" x="${padL}" y="0" width="${iw}" height="${H}"/>
+  </svg><div class="swell-tip"></div>`;
+
+  const svg = wrap.querySelector('svg');
+  const cursor = wrap.querySelector('.cursor');
+  const tip = wrap.querySelector('.swell-tip');
+  const hit = wrap.querySelector('.hit');
+  const show = (clientX) => {
+    const r = wrap.getBoundingClientRect();
+    const x = (clientX - r.left) * (W / r.width);
+    const i = Math.max(0, Math.min(n - 1, Math.round(((x - padL) / iw) * (n - 1))));
+    const cx = xs(i);
+    cursor.setAttribute('x1', cx); cursor.setAttribute('x2', cx);
+    tip.innerHTML = `<strong>${labels[i]}</strong><i style="background:#8ba8be"></i>${primary[i].toFixed(1)} ft<br><i style="background:#a8be94"></i>${secondary[i].toFixed(1)} ft`;
+    tip.style.left = `${(cx / W) * 100}%`;
+    tip.style.top = `${(ys(primary[i]) / H) * 100}%`;
+    tip.classList.add('show');
+    wrap.classList.add('hover');
+  };
+  const hide = () => { tip.classList.remove('show'); wrap.classList.remove('hover'); };
+  hit.addEventListener('pointermove', e => show(e.clientX));
+  hit.addEventListener('pointerdown', e => show(e.clientX));
+  hit.addEventListener('pointerleave', hide);
+  svg.addEventListener('touchend', hide, { passive: true });
+}
+
+function redrawSwellChart() {
+  if (!_swellChartData) return;
+  const { labels, primary, secondary } = _swellChartData;
+  RENDER_QUIET = true;
+  drawSwellChart(labels, primary, secondary);
+  RENDER_QUIET = false;
 }
 
 function renderSwellCards(marine) {
@@ -3395,28 +3914,22 @@ function renderSwellCards(marine) {
 
     el.innerHTML = `
       <div class="swell-rank">${s.rank}</div>
-      <div class="swell-height">
-        ${h !== null ? metersToFeetLabel(h) : '<span style="font-size:1.4rem;color:var(--stone)">—</span>'}
+      <div class="swell-height-row">
+        <div class="swell-height">
+          ${h !== null ? metersToFeetLabel(h) : '<span style="font-size:1.4rem;color:var(--stone)">—</span>'}
+        </div>
+        ${d !== null ? `<div class="swell-dir-badge" title="Swell from ${Math.round(d)}°">${arrowSVG(d, s.color, 34)}<span class="swell-dir-txt">${dirToCardinal(d)}<em>${Math.round(d)}°</em></span></div>` : ''}
       </div>
       <div class="swell-stats" style="align-items:baseline;">
         <div class="stat">
           <div class="stat-label">Period</div>
           <div class="stat-value">${p !== null ? p.toFixed(0) + 's' : '—'}</div>
         </div>
-        <div class="stat">
-          <div class="stat-label">Direction</div>
-          <div class="stat-value" style="display:flex;align-items:baseline;gap:4px;">
-            <span style="display:inline-flex;align-items:center;">${d !== null ? arrowSVG(d, s.color) : ''}</span>
-            <span>${d !== null ? dirToCardinal(d) : '—'}</span>
-          </div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Degrees</div>
-          <div class="stat-value">${d !== null ? Math.round(d) + '°' : '—'}</div>
-        </div>
       </div>
       <div style="font-size:10px;color:var(--stone);opacity:0.6;margin-top:0.6rem;font-weight:400;">${s.sub}</div>
     `;
+    if (h !== null) tweenNumber(el.querySelector('.swell-height'), s.el, h * 3.28084, v => `${v.toFixed(1)} ft`);
+    animateIn(el);
   });
 }
 
@@ -3438,92 +3951,36 @@ function renderSwellChart(marine) {
     labels.push(t.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true }));
     const sw = marine.hourly.swell_wave_height?.[i];
     const ww = marine.hourly.wind_wave_height?.[i];
-    const tot = marine.hourly.wave_height?.[i];
     const swV = parseFloat(sw) || 0;
     const wwV = parseFloat(ww) || 0;
-    const totV = parseFloat(tot) || 0;
     primary.push(parseFloat(mToFt(Math.max(swV, wwV))));
     secondary.push(parseFloat(mToFt(Math.min(swV, wwV))));
-    const tert = Math.max(0, totV - swV - wwV);
-
   }
 
-  const canvas = document.getElementById('swellChart');
-
-  if (swellChart) { swellChart.destroy(); swellChart = null; }
-
-  swellChart = new Chart(canvas, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: 'Primary',
-          data: primary,
-          borderColor: '#8ba8be',
-          backgroundColor: 'rgba(139,168,190,0.08)',
-          borderWidth: 2,
-          pointRadius: 3,
-          pointBackgroundColor: '#8ba8be',
-          tension: 0.4,
-          fill: true,
-        },
-        {
-          label: 'Secondary',
-          data: secondary,
-          borderColor: '#a8be94',
-          backgroundColor: 'rgba(168,190,148,0.06)',
-          borderWidth: 2,
-          pointRadius: 3,
-          pointBackgroundColor: '#a8be94',
-          tension: 0.4,
-          fill: false,
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y !== null ? ctx.parsed.y.toFixed(1) + ' ft' : '—'}`
-          }
-        }
-      },
-      scales: {
-        x: {
-          grid: { color: 'rgba(0,0,0,0.04)' },
-          ticks: { color: '#718096', font: { size: 11, family: 'DM Sans, Helvetica, sans-serif' } }
-        },
-        y: {
-          grid: { color: 'rgba(0,0,0,0.04)' },
-          ticks: {
-            color: '#718096',
-            font: { size: 11, family: 'DM Sans, Helvetica, sans-serif' },
-            callback: v => v + ' ft'
-          },
-          beginAtZero: true,
-        }
-      }
-    }
-  });
+  drawSwellChart(labels, primary, secondary);
 }
 
+let _tideRaf = 0;
 function renderTides(tideData, marine) {
   const canvas = document.getElementById('tideCanvas');
   const ctx = canvas.getContext('2d');
-  const W = canvas.width = canvas.offsetWidth;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const W = canvas.offsetWidth || 300;
   const H = 90;
-  canvas.height = H;
-  ctx.clearRect(0, 0, W, H);
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   const { predictions, waterLevel } = tideData;
   const now = new Date();
 
   let nextHigh = null, nextLow = null;
 
+  const paint = (t) => {
+  ctx.clearRect(0, 0, W, H);
+  ctx.save();
+  if (t < 1) { ctx.beginPath(); ctx.rect(0, 0, W * t, H); ctx.clip(); }
   if (predictions && predictions.length > 0) {
     const allPreds = predictions.map(p => ({
       time: new Date(p.t.replace(' ', 'T')),
@@ -3613,6 +4070,23 @@ function renderTides(tideData, marine) {
     ctx.stroke();
   }
 
+  ctx.restore();
+  };
+
+  if (_tideRaf) cancelAnimationFrame(_tideRaf);
+  if (RENDER_QUIET || REDUCED_MOTION) {
+    paint(1);
+  } else {
+    paint(0);
+    const t0 = performance.now(), dur = 900;
+    const step = (ts) => {
+      const p = Math.min(1, (ts - t0) / dur);
+      paint(1 - Math.pow(1 - p, 3));
+      if (p < 1) _tideRaf = requestAnimationFrame(step);
+    };
+    _tideRaf = requestAnimationFrame(step);
+  }
+
   const isIncoming = nextHigh && nextLow ? nextHigh.time < nextLow.time : null;
   const dirWrap = document.getElementById('tide-direction-wrap');
   if (isIncoming !== null) {
@@ -3640,6 +4114,7 @@ function renderTides(tideData, marine) {
       <div class="tide-stat-sub">${fmt(nextLow?.time)}</div>
     </div>
   `;
+  animateIn(statsEl);
 }
 
 function renderWind(weather, buoy) {
@@ -3657,6 +4132,8 @@ function renderWind(weather, buoy) {
         ${wgust ? `<div class="wind-details">Gusts ${Math.round(wgust)} mph</div>` : ''}
       </div>
     `;
+    tweenNumber(windEl.querySelector('.wind-number'), 'wind', wspd, v => String(Math.round(v)));
+    animateIn(windEl);
   } else {
     windEl.innerHTML = `<div class="error-text">Wind data unavailable</div>`;
   }
@@ -3690,12 +4167,13 @@ function renderBuoy(buoy) {
     </div>
     <div class="buoy-name">NOAA Buoy ${buoyId} — ${buoyLabel}</div>
   `;
+  animateIn(el);
 }
 
 function renderTemps(weather, buoy, marine) {
   const airC = weather?.current?.temperature_2m;
   if (airC !== undefined) {
-    document.getElementById('air-temp-card').textContent = `${Math.round(airC)}°F`;
+    tweenNumber(document.getElementById('air-temp-card'), 'air', airC, v => `${Math.round(v)}°F`);
     document.getElementById('air-temp-header').textContent = `Air: ${Math.round(airC)}°F`;
   }
 
@@ -3717,7 +4195,7 @@ function renderTemps(weather, buoy, marine) {
   }
 
   if (wt !== null) {
-    document.getElementById('water-temp').textContent = `${wt}°F`;
+    tweenNumber(document.getElementById('water-temp'), 'water', parseFloat(wt), v => `${Math.round(v)}°F`);
     document.getElementById('water-temp-note').textContent =
       parseFloat(wt) < 50 ? 'Cold — 5/4 with boots recommended' :
       parseFloat(wt) < 54 ? 'Cool — 4/3 hooded + boots' :
@@ -3747,11 +4225,15 @@ function setOverallConditions(marine, weather) {
   if (ftH >= 2 && ftH <= 8 && wp >= 10 && wind < 15) { label = 'Good'; cls = 'conditions-good'; }
   else if (ftH > 8 || wind > 20) { label = 'Heavy'; cls = 'conditions-poor'; }
 
-  badge.textContent = label;
-  badge.className = `conditions-badge ${cls}`;
+  if (badge.textContent !== label || !badge.classList.contains(cls)) {
+    badge.textContent = label;
+    badge.className = `conditions-badge ${cls}`;
+    if (!RENDER_QUIET && !REDUCED_MOTION) { void badge.offsetWidth; badge.classList.add('pop'); }
+  }
 }
 
-function renderAll({ marine, weather, tideData, buoy }) {
+function renderAll({ marine, weather, tideData, buoy }, opts = {}) {
+  RENDER_QUIET = !!opts.quiet;
   if (marine) {
     renderSwellCards(marine);
     renderSwellChart(marine);
@@ -3760,25 +4242,20 @@ function renderAll({ marine, weather, tideData, buoy }) {
       const ranks = ['Primary swell','Secondary swell'];
       document.getElementById(id).innerHTML = `<div class="swell-rank">${ranks[i]}</div><div style="font-size:12px;color:#c0392b;margin-top:8px;">Data unavailable</div>`;
     });
-    const canvas = document.getElementById('swellChart');
-    const ctx = canvas.getContext('2d');
-    canvas.width = canvas.offsetWidth; canvas.height = 140;
-    ctx.font = '13px DM Sans, Helvetica, sans-serif';
-    ctx.fillStyle = '#718096';
-    ctx.fillText('Marine data unavailable', 16, 50);
+    document.getElementById('swellChart').innerHTML = '<div class="swell-chart-empty">Marine data unavailable</div>';
   }
   renderTides(tideData, marine);
   if (weather || buoy) renderWind(weather, buoy);
   renderBuoy(buoy);
   renderTemps(weather, buoy, marine);
   if (marine && weather) setOverallConditions(marine, weather);
+  RENDER_QUIET = false;
 }
 
 async function loadAll() {
   const locId = currentLocId;
   const cached = dataCache[locId];
 
-  // If we have cached data, render it immediately — no loading state shown
   if (cached) {
     renderAll(cached);
     document.getElementById('updated-time').textContent =
@@ -3787,12 +4264,10 @@ async function loadAll() {
     document.getElementById('updated-time').textContent = 'Fetching live data…';
   }
 
-  // Always fetch fresh data in the background; re-render when done
   try {
     const fresh = await fetchLocData(locId);
-    // Only update the UI if the user hasn't switched locations while we were fetching
     if (currentLocId === locId) {
-      renderAll(fresh);
+      renderAll(fresh, { quiet: !!cached });
       document.getElementById('updated-time').textContent =
         `Last updated ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
     }
@@ -3801,7 +4276,6 @@ async function loadAll() {
   }
 }
 
-// Cache of 10-day nav swell data per location, keyed by locId
 const navSwellCache = {};
 
 async function fetchNavSwells() {
@@ -3818,10 +4292,8 @@ async function fetchNavSwells() {
       if (!res.ok) throw new Error('failed');
       const data = await res.json();
 
-      // Cache the full hourly dataset for this location
       navSwellCache[locId] = data;
 
-      // Show current-hour value (today, offset 0)
       const hours = data.hourly.time;
       let idx = 0;
       for (let i = 0; i < hours.length; i++) {
@@ -3839,8 +4311,6 @@ async function fetchNavSwells() {
   }));
 }
 
-// Re-slice cached nav swell data to show peak swell for a given day offset.
-// Called whenever the user selects a forecast day.
 function updateNavSwellsForDay(dayOffset) {
   const locIds = Object.keys(LOCATIONS);
   locIds.forEach(locId => {
@@ -3849,7 +4319,6 @@ function updateNavSwellsForDay(dayOffset) {
     if (!el) return;
 
     if (dayOffset === 0) {
-      // Restore live current-hour value
       if (!data) return;
       const now   = new Date();
       const hours = data.hourly.time;
@@ -3866,12 +4335,10 @@ function updateNavSwellsForDay(dayOffset) {
     }
 
     if (!data) {
-      // No cache yet — mark as loading and fetch will arrive soon
       el.classList.add('loading-swell');
       return;
     }
 
-    // Find peak swell across target day
     const hours = data.hourly.time;
     const target = new Date();
     target.setDate(target.getDate() + dayOffset);
@@ -3893,7 +4360,6 @@ function updateNavSwellsForDay(dayOffset) {
   });
 }
 
-// ─── Add Location Modal ────────────────────────────────────────────────────
 let searchTimeout = null;
 let tideResolveTimeout = null;
 let resolvedTideStation = null;
@@ -3902,7 +4368,6 @@ let resolvedTideLabel = null;
 function openAddModal() {
   document.getElementById('add-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
-  // Reset form
   ['place-search','loc-name','loc-subtitle','loc-lat','loc-lon','loc-tide-station'].forEach(id => {
     document.getElementById(id).value = '';
   });
@@ -3925,7 +4390,6 @@ function handleOverlayClick(e) {
   if (e.target === document.getElementById('add-modal')) closeAddModal();
 }
 
-// Geocoding via Open-Meteo (free, no key)
 async function geocodePlace(query) {
   const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=6&language=en&format=json`;
   const res = await fetch(url);
@@ -3953,7 +4417,6 @@ function onPlaceSearch(val) {
           <span>${[r.admin1, r.admin2, r.country].filter(Boolean).join(', ')}</span>
         </div>
       `).join('');
-      // Store results for selection
       resultsEl._results = results;
     } catch(e) {
       resultsEl.innerHTML = '<div class="search-status">Search unavailable — enter coordinates manually.</div>';
@@ -3985,7 +4448,6 @@ function selectPlace(idx) {
   checkFormReady();
 }
 
-// Resolve nearest NOAA tide station from coords
 async function resolveNearestTideStation(lat, lon) {
   const statusEl = document.getElementById('tide-station-status');
   const stationInput = document.getElementById('loc-tide-station');
@@ -3995,14 +4457,12 @@ async function resolveNearestTideStation(lat, lon) {
   resolvedTideLabel = null;
 
   try {
-    // NOAA stations API — fetch stations within ~2° box
     const url = `https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json?type=tidepredictions&units=english`;
     const res = await fetch(url);
     if (!res.ok) throw new Error('Stations API failed');
     const data = await res.json();
     const stations = data.stations || [];
 
-    // Find nearest by Haversine distance
     let nearest = null, nearestDist = Infinity;
     stations.forEach(s => {
       const slat = parseFloat(s.lat), slon = parseFloat(s.lng);
@@ -4051,7 +4511,6 @@ function checkFormReady() {
   document.getElementById('add-loc-btn').disabled = !(name && lat && lon && tide);
 }
 
-// Wire up name/tide inputs to re-check readiness
 document.addEventListener('DOMContentLoaded', () => {
   ['loc-name','loc-tide-station'].forEach(id => {
     document.getElementById(id)?.addEventListener('input', checkFormReady);
@@ -4114,7 +4573,6 @@ async function addLocation() {
   saveCustomLocations();
   addNavButton(loc);
 
-  // Add a marker to the map for the new spot
   if (_leafletMap && !_spotMarkers[id]) {
     const marker = L.marker([lat, lon], { icon: _makeSpotIcon(false) })
       .addTo(_leafletMap)
@@ -4127,7 +4585,6 @@ async function addLocation() {
 
   closeAddModal();
 
-  // Fetch swell for nav pill
   try {
     const url = `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=swell_wave_height,wind_wave_height&timezone=America%2FLos_Angeles&forecast_days=1`;
     const res = await fetch(url);
@@ -4146,7 +4603,6 @@ async function addLocation() {
     if (el) el.innerHTML = '—';
   }
 
-  // Switch to the new location
   switchLocation(id);
 }
 
@@ -4160,7 +4616,6 @@ function toggleEditMode() {
 
 function removeLocation(e, locId) {
   e.stopPropagation();
-  // Don't remove if it's currently active — switch away first
   if (currentLocId === locId) {
     const ids = Object.keys(LOCATIONS);
     const fallback = ids.find(id => id !== locId) || ids[0];
@@ -4170,11 +4625,9 @@ function removeLocation(e, locId) {
   delete dataCache[locId];
   const btn = document.querySelector(`.loc-btn[data-loc="${locId}"]`);
   if (btn) btn.remove();
-  // Remove map marker
   if (_spotMarkers[locId]) { _spotMarkers[locId].remove(); delete _spotMarkers[locId]; }
   saveCustomLocations();
 
-  // Auto-exit edit mode if only one spot remains
   if (Object.keys(LOCATIONS).length <= 1) {
     const nav = document.getElementById('loc-nav');
     const toggleBtn = document.getElementById('loc-edit-toggle');
@@ -4183,7 +4636,6 @@ function removeLocation(e, locId) {
   }
 }
 
-// Close search dropdown on outside click, and exit edit mode on outside click
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.search-wrap')) {
     document.getElementById('search-results')?.classList.remove('open');
@@ -4201,10 +4653,9 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// ─── Tag editing ──────────────────────────────────────────────────────────────
-const TAG_OVERRIDES_KEY = 'surf-tag-overrides'; // { [locId]: { tag, tagClass } | null }
+const TAG_OVERRIDES_KEY = 'surf-tag-overrides';
 let tagPopoverLocId = null;
-let tagPopoverSelected = null; // { tag, tagClass } or null
+let tagPopoverSelected = null;
 
 const TAG_PRESETS = [
   { tag: 'Favorite',       tagClass: 'tag-fave' },
@@ -4244,11 +4695,9 @@ function renderTagInNav(locId, tag, tagClass) {
   if (tag) {
     if (tagEl) {
       tagEl.textContent = tag;
-      // swap classes
       tagEl.className = `loc-btn-tag ${tagClass || 'tag-custom'}`;
       tagEl.style.display = '';
     } else {
-      // tag element doesn't exist yet — create it (for custom spots loaded from storage)
       const btn = document.querySelector(`.loc-btn[data-loc="${locId}"]`);
       if (btn) {
         const span = document.createElement('span');
@@ -4262,13 +4711,11 @@ function renderTagInNav(locId, tag, tagClass) {
     if (addEl) addEl.style.display = 'none';
   } else {
     if (tagEl) tagEl.style.display = 'none';
-    // addEl visibility is managed by CSS (.loc-nav.edit-mode .loc-btn-tag-add)
   }
 }
 
 function openTagPopover(e, locId) {
   e.stopPropagation();
-  // Only work in edit mode
   const nav = document.getElementById('loc-nav');
   if (!nav.classList.contains('edit-mode')) return;
 
@@ -4277,7 +4724,6 @@ function openTagPopover(e, locId) {
   const currentTag = loc?.tag || '';
   const currentClass = loc?.tagClass || '';
 
-  // Populate presets
   const presetsEl = document.getElementById('tag-presets');
   presetsEl.innerHTML = '';
   TAG_PRESETS.forEach(p => {
@@ -4294,13 +4740,11 @@ function openTagPopover(e, locId) {
     presetsEl.appendChild(btn);
   });
 
-  // Pre-fill custom input if current tag isn't a preset
   const isPreset = TAG_PRESETS.some(p => p.tag === currentTag);
   const customInput = document.getElementById('tag-custom-input');
   customInput.value = (!isPreset && currentTag) ? currentTag : '';
   tagPopoverSelected = currentTag ? { tag: currentTag, tagClass: currentClass } : null;
 
-  // Position popover near the clicked element
   const popover = document.getElementById('tag-popover');
   popover.classList.add('open');
   const rect = e.target.getBoundingClientRect();
@@ -4356,16 +4800,12 @@ function closeTagPopover() {
   tagPopoverLocId = null;
 }
 
-// Close popover on outside click
 document.addEventListener('click', (e) => {
   const popover = document.getElementById('tag-popover');
   if (popover.classList.contains('open') && !popover.contains(e.target)) {
     closeTagPopover();
   }
 });
-
-// ─── End tag editing ──────────────────────────────────────────────────────────
-
 
 const CUSTOM_LOCS_KEY = 'surf-custom-locations';
 
@@ -4386,15 +4826,22 @@ function loadCustomLocations() {
   } catch(e) {}
 }
 
-// ─── Section collapse/expand ───────────────────────────────────────────────
 function toggleSection(id) {
   const body = document.getElementById(`section-${id}`);
   const label = body?.previousElementSibling;
   if (!body) return;
   const isCollapsed = body.classList.toggle('collapsed');
-  if (label) label.classList.toggle('collapsed', isCollapsed);
+  body.classList.add('is-animating');
+  clearTimeout(body._animT);
+  body._animT = setTimeout(() => body.classList.remove('is-animating'), 480);
+  if (label) {
+    label.classList.toggle('collapsed', isCollapsed);
+    label.setAttribute('aria-expanded', String(!isCollapsed));
+  }
+  if (id === 'location-map' && !isCollapsed && _leafletMap) {
+    setTimeout(() => _leafletMap.invalidateSize(), 450);
+  }
 
-  // Lazy-load Windy iframe the first time the map section is expanded
   if (id === 'map' && !isCollapsed) {
     const iframe = document.getElementById('windy-iframe');
     if (iframe && !iframe.src && iframe.dataset.src) {
@@ -4403,9 +4850,8 @@ function toggleSection(id) {
   }
 }
 
-// ─── Minimal Leaflet location map ─────────────────────────────────────────
 let _leafletMap = null;
-let _spotMarkers = {}; // locId → L.marker
+let _spotMarkers = {};
 
 function _makeSpotIcon(active) {
   return L.divIcon({
@@ -4418,8 +4864,10 @@ function _makeSpotIcon(active) {
   });
 }
 
+let _mapWanted = false;
 function initLocationMap(activeLat, activeLon) {
   if (_leafletMap) return;
+  if (typeof L === 'undefined') { _mapWanted = true; return; }
   _leafletMap = L.map('location-map-div', {
     zoomControl: true,
     scrollWheelZoom: false,
@@ -4428,8 +4876,6 @@ function initLocationMap(activeLat, activeLon) {
     attributionControl: true,
   });
 
-  // Enable two-finger trackpad / scroll-wheel zoom on focus, disable on blur
-  // so it doesn't hijack page scrolling when the map isn't the target
   const mapEl = document.getElementById('location-map-div');
   mapEl.addEventListener('mouseenter', () => _leafletMap.scrollWheelZoom.enable());
   mapEl.addEventListener('mouseleave', () => _leafletMap.scrollWheelZoom.disable());
@@ -4461,8 +4907,7 @@ function initLocationMap(activeLat, activeLon) {
 }
 
 function updateLocationMap(lat, lon) {
-  if (!_leafletMap) { initLocationMap(lat, lon); return; }
-  // Update marker styles — active = dark, others = muted
+  if (!_leafletMap) { if (_mapWanted) initLocationMap(lat, lon); return; }
   Object.entries(_spotMarkers).forEach(([id, marker]) => {
     const loc = LOCATIONS[id];
     const isActive = loc && loc.lat === lat && loc.lon === lon;
@@ -4470,16 +4915,103 @@ function updateLocationMap(lat, lon) {
   });
 }
 
-// Init — critical path first
-loadCustomLocations();       // restore any saved custom spots
-applyTagOverrides();         // restore any saved tag edits
-fetchNavSwells();            // small, parallel fetches for nav swell numbers
-renderPhotoGallery('cannon-beach'); // render photos for default location
-loadAll();                   // loads Cannon Beach immediately
-initLocationMap(45.8918, -123.9615); // init minimal location map
+loadCustomLocations();
+applyTagOverrides();
+fetchNavSwells();
+loadAll();
 
-// Defer non-critical prefetch until the browser is idle, so the initial
-// render / interactive threshold isn't blocked by background fetches
+const supportsIO = 'IntersectionObserver' in window;
+
+function whenNear(el, cb, margin = '320px') {
+  if (!el) return;
+  if (!supportsIO) { cb(); return; }
+  const io = new IntersectionObserver((entries) => {
+    if (entries.some(e => e.isIntersecting)) { io.disconnect(); cb(); }
+  }, { rootMargin: `${margin} 0px` });
+  io.observe(el);
+}
+
+let _galleryStarted = false;
+whenNear(document.getElementById('section-photos'), () => {
+  if (!_galleryStarted) renderPhotoGallery(currentLocId);
+}, '600px');
+
+let _mapTries = 0;
+function tryInitMap() {
+  if (typeof L === 'undefined') {
+    if (_mapTries++ < 40) setTimeout(tryInitMap, 150);
+    return;
+  }
+  initLocationMap(currentLoc.lat, currentLoc.lon);
+}
+whenNear(document.getElementById('section-location-map'), tryInitMap, '200px');
+
+document.querySelectorAll('.section-label').forEach(label => {
+  label.setAttribute('role', 'button');
+  label.setAttribute('tabindex', '0');
+  label.setAttribute('aria-expanded', String(!label.classList.contains('collapsed')));
+  label.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); label.click(); }
+  });
+});
+
+if (supportsIO && !REDUCED_MOTION) {
+  const targets = [];
+  document.querySelectorAll('.section-label, .footer').forEach(el => targets.push(el));
+  document.querySelectorAll('.section-inner').forEach(inner => {
+    let i = 0;
+    Array.from(inner.children).forEach(child => {
+      if (child.classList.contains('grid-2') || child.classList.contains('grid-3') || child.classList.contains('grid-2-wide')) {
+        Array.from(child.children).forEach(c => { c.style.setProperty('--i', i++); targets.push(c); });
+      } else {
+        child.style.setProperty('--i', i++);
+        targets.push(child);
+      }
+    });
+  });
+  const pending = new Set(targets);
+  const show = (el) => { el.classList.add('in'); revealIO.unobserve(el); pending.delete(el); };
+  const revealIO = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) show(e.target); });
+  }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
+  targets.forEach(el => { el.classList.add('reveal'); revealIO.observe(el); });
+  let revealTick = false;
+  window.addEventListener('scroll', () => {
+    if (!pending.size || revealTick) return;
+    revealTick = true;
+    requestAnimationFrame(() => {
+      revealTick = false;
+      pending.forEach(el => { if (el.getBoundingClientRect().bottom < 0) show(el); });
+    });
+  }, { passive: true });
+}
+
+let _resizeT = 0;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeT);
+  _resizeT = setTimeout(() => {
+    redrawSwellChart();
+    const cached = dataCache[currentLocId];
+    if (cached && cached.tideData) { RENDER_QUIET = true; renderTides(cached.tideData, cached.marine); RENDER_QUIET = false; }
+  }, 160);
+}, { passive: true });
+
+(() => {
+  const lb = document.getElementById('lightbox');
+  if (!lb) return;
+  let sx = 0, sy = 0, active = false;
+  lb.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; active = true;
+  }, { passive: true });
+  lb.addEventListener('touchend', e => {
+    if (!active) return; active = false;
+    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.5) lbStep(dx < 0 ? 1 : -1);
+    else if (dy > 90 && Math.abs(dy) > Math.abs(dx) * 1.5) lbClose();
+  }, { passive: true });
+})();
+
 const schedulePrefetch = (cb) => {
   if ('requestIdleCallback' in window) {
     requestIdleCallback(cb, { timeout: 2000 });
@@ -4489,14 +5021,12 @@ const schedulePrefetch = (cb) => {
 };
 schedulePrefetch(() => prefetchAllLocations());
 
-// Every 30 min: refresh cached locations — but only when the tab is visible.
-// Saves battery / data when the page is in a background tab.
 setInterval(() => {
   if (document.visibilityState !== 'visible') return;
   Object.keys(LOCATIONS).forEach(locId => {
     fetchLocData(locId).then(fresh => {
       if (currentLocId === locId) {
-        renderAll(fresh);
+        renderAll(fresh, { quiet: true });
         document.getElementById('updated-time').textContent =
           `Last updated ${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
       }
@@ -4504,7 +5034,6 @@ setInterval(() => {
   });
 }, 30 * 60 * 1000);
 
-// When user returns to the tab after a while, refresh if data is stale (>15min)
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') return;
   const cached = dataCache[currentLocId];
@@ -4513,55 +5042,40 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-// ═══════════════════════════════════════════════════════════════════
-//  renderForDay — re-slice existing API data to a target day offset
-//  and re-render all dashboard modules to show forecast conditions
-// ═══════════════════════════════════════════════════════════════════
-
-// Tide cache for future days — keyed by `locId:dayOffset`
 const forecastTideCache = {};
 
 async function renderForDay(dayOffset) {
   const locId = currentLocId;
   const cached = dataCache[locId];
 
-  // Update header date chip
   const chip      = document.getElementById('forecast-date-chip');
   const chipLabel = document.getElementById('forecast-chip-label');
 
   if (dayOffset === 0) {
     chip && chip.classList.remove('visible');
-    // Restore live "Last updated" text
     const ts = cached?.fetchedAt;
     if (ts) document.getElementById('updated-time').textContent =
       `Last updated ${new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
-    // Restore nav spot swell numbers to current hour
     updateNavSwellsForDay(0);
-    // Re-render with today's data (live hour index)
     if (cached) renderAll(cached);
     return;
   }
 
-  // Show header chip with selected date
   const target = new Date();
   target.setDate(target.getDate() + dayOffset);
   const dateLabel = target.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   if (chipLabel) chipLabel.textContent = dateLabel;
   chip && chip.classList.add('visible');
-  // Update "updated" line to show forecast context
   document.getElementById('updated-time').textContent =
     `Forecast · ${target.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`;
-  // Update nav spot swell numbers to reflect the selected forecast day
   updateNavSwellsForDay(dayOffset);
 
-  if (!cached) return; // nothing to work with yet
+  if (!cached) return;
 
   const { marine, weather } = cached;
 
-  // ── Re-slice marine hourly data to target day's noon hour ─────────────
   if (marine?.hourly) {
     const hours = marine.hourly.time;
-    // Find the index closest to noon on the target day
     const targetNoon = new Date(target);
     targetNoon.setHours(12, 0, 0, 0);
     let bestIdx = 0, bestDiff = Infinity;
@@ -4570,10 +5084,8 @@ async function renderForDay(dayOffset) {
       if (diff < bestDiff) { bestDiff = diff; bestIdx = i; }
     }
 
-    // Build a synthetic "current hour" version of renderSwellCards
     renderSwellCardsAtIdx(marine, bestIdx);
 
-    // Chart: show 12h window centred on target day
     const dayStart = new Date(target); dayStart.setHours(0, 0, 0, 0);
     const dayEnd   = new Date(target); dayEnd.setHours(23, 59, 59, 999);
     const indices  = [];
@@ -4583,7 +5095,6 @@ async function renderForDay(dayOffset) {
     }
     renderSwellChartAtIndices(marine, indices);
 
-    // SST for the day
     const sst = marine.hourly.sea_surface_temperature?.[bestIdx];
     if (sst !== null && sst !== undefined) {
       const wt = Math.round((sst * 9/5) + 32);
@@ -4594,7 +5105,6 @@ async function renderForDay(dayOffset) {
     }
   }
 
-  // ── Re-slice weather hourly data for wind at target day noon ─────────
   if (weather?.hourly) {
     const hours = weather.hourly.time;
     const targetNoon = new Date(target); targetNoon.setHours(12, 0, 0, 0);
@@ -4618,7 +5128,6 @@ async function renderForDay(dayOffset) {
       document.getElementById('air-temp-header').textContent = `Air: ${Math.round(airT)}°F (forecast)`;
     }
 
-    // Overall conditions badge using forecast data
     if (marine?.hourly) {
       const mHours = marine.hourly.time;
       const mNoon  = new Date(target); mNoon.setHours(12,0,0,0);
@@ -4642,18 +5151,16 @@ async function renderForDay(dayOffset) {
     }
   }
 
-  // ── Tides: fetch for target date (cached after first fetch) ───────────
   const tideKey = `${locId}:${dayOffset}`;
+  const bannerLoad = document.getElementById('banner-load') || { style: {} };
   bannerLoad.style.display = '';
   if (forecastTideCache[tideKey]) {
     renderTidesForDay(forecastTideCache[tideKey], dayOffset);
     bannerLoad.style.display = 'none';
-    // Add swell chip to banner
     updateBannerChip(marine, dayOffset);
   } else {
-    // Fetch in background, render when done (guard for location/day change)
     fetchNOAATides(currentLoc, dayOffset).then(tideData => {
-      if (currentLocId !== locId) return; // location changed
+      if (currentLocId !== locId) return;
       forecastTideCache[tideKey] = tideData;
       renderTidesForDay(tideData, dayOffset);
       bannerLoad.style.display = 'none';
@@ -4663,7 +5170,6 @@ async function renderForDay(dayOffset) {
 }
 
 function updateBannerChip(marine, dayOffset) {
-  // No-op — chip is now part of the header date chip, nothing extra to update here
 }
 
 function forecastSwellRating(ft) {
@@ -4676,7 +5182,6 @@ function forecastSwellRating(ft) {
   return              { label: 'XXL',   cls: 'swell-xxl',     color: '#C0392B' };
 }
 
-// Re-renders swell cards using a specific hourly index
 function renderSwellCardsAtIdx(marine, idx) {
   const swA = {
     height: parseFloat(marine.hourly.swell_wave_height?.[idx]) || 0,
@@ -4702,26 +5207,22 @@ function renderSwellCardsAtIdx(marine, idx) {
     const d = s.dir && !isNaN(s.dir) ? s.dir : null;
     el.innerHTML = `
       <div class="swell-rank">${s.rank}</div>
-      <div class="swell-height">
-        ${h !== null ? metersToFeetLabel(h) : '<span style="font-size:1.4rem;color:var(--stone)">—</span>'}
+      <div class="swell-height-row">
+        <div class="swell-height">
+          ${h !== null ? metersToFeetLabel(h) : '<span style="font-size:1.4rem;color:var(--stone)">—</span>'}
+        </div>
+        ${d !== null ? `<div class="swell-dir-badge" title="Swell from ${Math.round(d)}°">${arrowSVG(d, s.color, 34)}<span class="swell-dir-txt">${dirToCardinal(d)}<em>${Math.round(d)}°</em></span></div>` : ''}
       </div>
       <div class="swell-stats" style="align-items:baseline;">
         <div class="stat"><div class="stat-label">Period</div><div class="stat-value">${p !== null ? p.toFixed(0) + 's' : '—'}</div></div>
-        <div class="stat">
-          <div class="stat-label">Direction</div>
-          <div class="stat-value" style="display:flex;align-items:baseline;gap:4px;">
-            <span style="display:inline-flex;align-items:center;">${d !== null ? arrowSVG(d, s.color) : ''}</span>
-            <span>${d !== null ? dirToCardinal(d) : '—'}</span>
-          </div>
-        </div>
-        <div class="stat"><div class="stat-label">Degrees</div><div class="stat-value">${d !== null ? Math.round(d) + '°' : '—'}</div></div>
       </div>
       <div style="font-size:10px;color:var(--stone);opacity:0.6;margin-top:0.6rem;font-weight:400;">${s.sub}</div>
     `;
+    if (h !== null) tweenNumber(el.querySelector('.swell-height'), s.el, h * 3.28084, v => `${v.toFixed(1)} ft`);
+    animateIn(el);
   });
 }
 
-// Re-renders swell chart using a specific set of indices (one day's worth of hours)
 function renderSwellChartAtIndices(marine, indices) {
   if (!indices.length) return;
   const hours   = marine.hourly.time;
@@ -4734,46 +5235,23 @@ function renderSwellChartAtIndices(marine, indices) {
     primary.push(parseFloat(mToFt(Math.max(sw, ww))));
     secondary.push(parseFloat(mToFt(Math.min(sw, ww))));
   }
-  const canvas = document.getElementById('swellChart');
-  if (swellChart) { swellChart.destroy(); swellChart = null; }
-  swellChart = new Chart(canvas, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Primary',   data: primary,   borderColor: '#8ba8be', backgroundColor: 'rgba(139,168,190,0.08)', borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#8ba8be', tension: 0.4, fill: true },
-        { label: 'Secondary', data: secondary, borderColor: '#a8be94', backgroundColor: 'rgba(168,190,148,0.06)', borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#a8be94', tension: 0.4, fill: false },
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y !== null ? ctx.parsed.y.toFixed(1) + ' ft' : '—'}` } } },
-      scales: {
-        x: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { color: '#718096', font: { size: 11, family: 'DM Sans, Helvetica, sans-serif' } } },
-        y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { color: '#718096', font: { size: 11, family: 'DM Sans, Helvetica, sans-serif' }, callback: v => v + ' ft' }, beginAtZero: true }
-      }
-    }
-  });
+  drawSwellChart(labels, primary, secondary);
 }
 
-// Renders tide module for a future date (predictions only, no live water level)
 function renderTidesForDay(tideData, dayOffset) {
   const { predictions } = tideData;
-  // Build synthetic waterLevel: estimate from predictions (midway between surrounding highs/lows)
   const syntheticData = { predictions, waterLevel: null };
   renderTides(syntheticData, null);
 }
 
-// ═══════════════════════════════════════════════════════════════════
-//  10-DAY FORECAST CALENDAR MODULE
-// ═══════════════════════════════════════════════════════════════════
 (function() {
   const DAYS_SHORT   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
   let forecastPeakSwells  = Array(10).fill(null);
+  let forecastPeakDirs    = Array(10).fill(null);
   let forecastSelectedDay = 0;
-  let forecastCollapsed   = true; // starts collapsed — rail is the primary view
+  let forecastCollapsed   = true;
   let forecastLocId       = null;
 
   function fSwellRating(ft) {
@@ -4801,8 +5279,9 @@ function renderTidesForDay(tideData, dayOffset) {
   async function fetchForecastData(loc) {
     const now    = new Date();
     const result = Array(10).fill(null);
-    const hourlyUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${loc.lat}&longitude=${loc.lon}&hourly=swell_wave_height,wind_wave_height&timezone=America%2FLos_Angeles&forecast_days=7`;
-    const dailyUrl  = `https://marine-api.open-meteo.com/v1/marine?latitude=${loc.lat}&longitude=${loc.lon}&daily=swell_wave_height_max,wind_wave_height_max&timezone=America%2FLos_Angeles&forecast_days=10`;
+    const dirs   = Array(10).fill(null);
+    const hourlyUrl = `https://marine-api.open-meteo.com/v1/marine?latitude=${loc.lat}&longitude=${loc.lon}&hourly=swell_wave_height,wind_wave_height,swell_wave_direction,wind_wave_direction&timezone=America%2FLos_Angeles&forecast_days=7`;
+    const dailyUrl  = `https://marine-api.open-meteo.com/v1/marine?latitude=${loc.lat}&longitude=${loc.lon}&daily=swell_wave_height_max,wind_wave_height_max,swell_wave_direction_dominant,wind_wave_direction_dominant&timezone=America%2FLos_Angeles&forecast_days=10`;
     const [hourlyRes, dailyRes] = await Promise.allSettled([
       fetch(hourlyUrl).then(r => r.ok ? r.json() : null).catch(() => null),
       fetch(dailyUrl).then(r => r.ok ? r.json() : null).catch(() => null),
@@ -4813,15 +5292,22 @@ function renderTidesForDay(tideData, dayOffset) {
       for (let d = 0; d < 7; d++) {
         const dayStart = new Date(now); dayStart.setDate(dayStart.getDate()+d); dayStart.setHours(0,0,0,0);
         const dayEnd   = new Date(dayStart); dayEnd.setHours(23,59,59,999);
-        let peak = null;
+        let peak = null, peakDir = null;
         for (let i = 0; i < hours.length; i++) {
           const t = new Date(hours[i]);
           if (t >= dayStart && t <= dayEnd) {
-            const p = Math.max(parseFloat(hourlyData.hourly.swell_wave_height?.[i])||0, parseFloat(hourlyData.hourly.wind_wave_height?.[i])||0);
-            if (peak === null || p > peak) peak = p;
+            const sw = parseFloat(hourlyData.hourly.swell_wave_height?.[i]) || 0;
+            const ww = parseFloat(hourlyData.hourly.wind_wave_height?.[i]) || 0;
+            const p = Math.max(sw, ww);
+            if (peak === null || p > peak) {
+              peak = p;
+              const dr = parseFloat(sw >= ww ? hourlyData.hourly.swell_wave_direction?.[i] : hourlyData.hourly.wind_wave_direction?.[i]);
+              peakDir = isNaN(dr) ? null : dr;
+            }
           }
         }
         result[d] = peak;
+        dirs[d]   = peakDir;
       }
     }
     const dailyData = dailyRes.value;
@@ -4829,15 +5315,23 @@ function renderTidesForDay(tideData, dayOffset) {
       const dates = dailyData.daily.time || [];
       const sm    = dailyData.daily.swell_wave_height_max || [];
       const wm    = dailyData.daily.wind_wave_height_max  || [];
+      const sd    = dailyData.daily.swell_wave_direction_dominant || [];
+      const wd    = dailyData.daily.wind_wave_direction_dominant  || [];
       for (let i = 0; i < dates.length; i++) {
         const diffMs = new Date(dates[i]+'T12:00:00') - new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const d = Math.round(diffMs / 86400000);
         if (d >= 7 && d < 10) {
-          const peak = Math.max(parseFloat(sm[i])||0, parseFloat(wm[i])||0);
-          if (peak > 0) result[d] = peak;
+          const smv = parseFloat(sm[i])||0, wmv = parseFloat(wm[i])||0;
+          const peak = Math.max(smv, wmv);
+          if (peak > 0) {
+            result[d] = peak;
+            const dr = parseFloat(smv >= wmv ? sd[i] : wd[i]);
+            dirs[d] = isNaN(dr) ? null : dr;
+          }
         }
       }
     }
+    forecastPeakDirs = dirs;
     return result.some(v => v !== null) ? result : null;
   }
 
@@ -4870,9 +5364,14 @@ function renderTidesForDay(tideData, dayOffset) {
       const swellHTML  = swellFt !== null ? `${swellFt.toFixed(1)}<em>ft</em>` : '';
       const swellClass = swellFt !== null ? 'day-pill-swell' : 'day-pill-swell is-loading';
       const swellColor = (!isActive && rating.color) ? `style="color:${rating.color};font-weight:400;"` : '';
+      const dir = forecastPeakDirs[d];
+      const dirHTML = dir !== null && swellFt !== null
+        ? `<span class="day-pill-dir">${arrowSVG(dir, 'currentColor', 12, false)}${dirToCardinal(dir)}</span>`
+        : `<span class="day-pill-dir is-empty"></span>`;
       pill.innerHTML = `
         <div class="day-pill-header"><span class="day-pill-dow">${dow}</span><span class="day-pill-date">${dayNum}</span></div>
         <span class="${swellClass}" ${swellColor}>${swellHTML}</span>
+        ${dirHTML}
         <div class="day-pill-bar"><div class="day-pill-bar-fill" style="width:${barW}%;${fBarStyle(swellFt,isActive)}"></div></div>
       `;
       pill.addEventListener('click', () => forecastSelectDay(d));
@@ -4908,7 +5407,6 @@ function renderTidesForDay(tideData, dayOffset) {
       ?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     fUpdateContextBar();
     fBuildRail();
-    // Update all dashboard modules for the selected day
     renderForDay(forecastSelectedDay);
   };
 
@@ -4941,7 +5439,9 @@ function renderTidesForDay(tideData, dayOffset) {
       const cell    = document.createElement('div');
       cell.className = ['rail-cell', isActive ? 'rail-active':'', d>=7?'rail-outlook':''].filter(Boolean).join(' ');
       if (isActive) cell.style.setProperty('--rail-active-color', dotColor);
-      cell.innerHTML = `<div class="rail-dot" style="background:${dotColor};"></div><div class="rail-dow">${DAYS_SHORT[date.getDay()]}</div><div class="rail-date">${date.getDate()}</div>`;
+      const rdir = forecastPeakDirs[d];
+      const railDir = rdir !== null ? `<div class="rail-dir">${arrowSVG(rdir, 'currentColor', 9, false)}${dirToCardinal(rdir)}</div>` : `<div class="rail-dir is-empty"></div>`;
+      cell.innerHTML = `<div class="rail-dot" style="background:${dotColor};"></div><div class="rail-dow">${DAYS_SHORT[date.getDay()]}</div><div class="rail-date">${date.getDate()}</div>${railDir}`;
       cell.addEventListener('click', () => { forecastSelectDay(d); if (forecastCollapsed) window.forecastToggleCollapse(); });
       rail.appendChild(cell);
     }
@@ -4952,7 +5452,23 @@ function renderTidesForDay(tideData, dayOffset) {
     const wrap = document.getElementById('day-cal-wrap');
     const btn  = document.getElementById('collapse-toggle');
     if (!wrap || !btn) return;
+    const stage = document.getElementById('day-cal-stage');
+    const before = stage ? stage.offsetHeight : 0;
     wrap.classList.toggle('is-collapsed', forecastCollapsed);
+    if (stage && !REDUCED_MOTION) {
+      stage.classList.remove('settled');
+      stage.style.transition = 'none';
+      stage.style.height = 'auto';
+      const after = stage.offsetHeight;
+      stage.style.height = before + 'px';
+      void stage.offsetHeight;
+      stage.style.transition = '';
+      stage.style.height = after + 'px';
+      clearTimeout(stage._t);
+      stage._t = setTimeout(() => { stage.style.height = ''; stage.classList.add('settled'); }, 470);
+    } else if (stage) {
+      stage.classList.add('settled');
+    }
     const labelNode = btn.childNodes[0];
     if (labelNode && labelNode.nodeType === Node.TEXT_NODE) {
       labelNode.textContent = forecastCollapsed ? 'Expand' : 'Collapse';
@@ -4967,12 +5483,11 @@ function renderTidesForDay(tideData, dayOffset) {
 
   window.refreshForecast = async function(loc) {
     forecastPeakSwells  = Array(10).fill(null);
+    forecastPeakDirs    = Array(10).fill(null);
     forecastSelectedDay = 0;
     forecastLocId       = loc.id;
-    // Clear tide cache when switching locations
     Object.keys(forecastTideCache).forEach(k => { if (!k.startsWith(loc.id+':')) delete forecastTideCache[k]; });
     fBuildCalendar();
-    // Reset header date chip when location switches
     const _chip = document.getElementById('forecast-date-chip');
     if (_chip) _chip.classList.remove('visible');
     document.getElementById('updated-time').textContent = 'Fetching live data…';
@@ -4988,16 +5503,11 @@ function renderTidesForDay(tideData, dayOffset) {
 })();
 </script>
 
-<!-- ════════════════════════════════════════════════════════
-     SURF CAMS — HLS player + layout switcher
-     Lazy-initialised on first expand of the section
-════════════════════════════════════════════════════════ -->
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js" defer></script>
 <script>
 (function() {
   let surfcamInited = false;
 
-  // ── Open all cams in a standalone fullscreen window ───────────────────────
   window.openSurfcamWindow = function() {
     const w = window.screen.width, h = window.screen.height;
     const features = `width=${w},height=${h},left=0,top=0,toolbar=0,menubar=0,scrollbars=0,resizable=1`;
@@ -5083,64 +5593,96 @@ bar.classList.add('peek');setTimeout(function(){bar.classList.remove('peek')},22
     if (win) { win.document.write(html); win.document.close(); }
   };
 
-  // ── HLS init ──────────────────────────────────────────────────────────────
-  function initSurfcamHLS(videoEl, loadingEl, src) {
-    if (typeof Hls === 'undefined') return; // HLS.js not loaded yet
-    if (Hls.isSupported()) {
-      const hls = new Hls({ lowLatencyMode: true });
+  function attachHLS(slot) {
+    const videoEl = slot.querySelector('video');
+    const loadingEl = slot.querySelector('.surfcam-loading');
+    const src = slot.dataset.src;
+    if (!videoEl || slot._hls || slot._native) return;
+    videoEl.addEventListener('playing', () => {
+      videoEl.classList.add('playing');
+      if (loadingEl) loadingEl.classList.add('hidden');
+    });
+    if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+      const hls = new Hls({ lowLatencyMode: true, backBufferLength: 30 });
       hls.loadSource(src);
       hls.attachMedia(videoEl);
       hls.on(Hls.Events.MANIFEST_PARSED, () => videoEl.play().catch(() => {}));
       hls.on(Hls.Events.ERROR, (_, d) => {
         if (d.fatal && loadingEl) loadingEl.classList.remove('hidden');
       });
+      slot._hls = hls;
     } else if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
       videoEl.src = src;
       videoEl.play().catch(() => {});
+      slot._native = true;
     }
-    if (loadingEl) {
-      videoEl.addEventListener('playing', () => loadingEl.classList.add('hidden'));
+  }
+
+  function playSlot(slot) {
+    if (slot.dataset.type === 'iframe') {
+      const f = slot.querySelector('iframe');
+      if (f && !f.src) f.src = f.dataset.src;
+      return;
     }
+    if (typeof Hls === 'undefined' && !slot._native) {
+      if (!slot._waiting) {
+        slot._waiting = true;
+        const wait = () => {
+          if (typeof Hls === 'undefined') { setTimeout(wait, 120); return; }
+          slot._waiting = false;
+          if (slot._visible) playSlot(slot);
+        };
+        wait();
+      }
+      return;
+    }
+    if (!slot._hls && !slot._native) attachHLS(slot);
+    else {
+      if (slot._hls) slot._hls.startLoad();
+      slot.querySelector('video')?.play().catch(() => {});
+    }
+  }
+
+  function pauseSlot(slot) {
+    const v = slot.querySelector('video');
+    if (!v) return;
+    v.pause();
+    if (slot._hls) slot._hls.stopLoad();
   }
 
   function startSurfcams() {
     if (surfcamInited) return;
     surfcamInited = true;
-
-    // Wait for HLS.js to be ready (it's deferred)
-    const tryInit = () => {
-      if (typeof Hls === 'undefined') { setTimeout(tryInit, 100); return; }
-      initSurfcamHLS(
-        document.getElementById('surfcam-moment-video'),
-        document.getElementById('surfcam-moment-loading'),
-        'https://2-fss-2.themediacdn.com/pl_126/amlst:206100-2899404/playlist.m3u8'
-      );
-      initSurfcamHLS(
-        document.getElementById('surfcam-pelican-video'),
-        document.getElementById('surfcam-pelican-loading'),
-        'https://beachcam.pelicanbrewing.com/stream/53e4366f-8e2f-4252-a39d-1b4d0139db6a/channel/0/hls/live/index.m3u8'
-      );
-      initSurfcamHLS(
-        document.getElementById('surfcam-westport-video'),
-        document.getElementById('surfcam-westport-loading'),
-        'https://2-fss-2.streamhoster.com/pl_126/203494-1423454-1/playlist.m3u8'
-      );
-      initSurfcamLayoutBar();
-      initSurfcamExpand();
-    };
-    tryInit();
+    const slots = document.querySelectorAll('#surfcam-cams .surfcam-slot');
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          const slot = e.target;
+          slot._visible = e.isIntersecting;
+          if (e.isIntersecting) playSlot(slot); else pauseSlot(slot);
+        });
+      }, { threshold: 0.2 });
+      slots.forEach(slot => io.observe(slot));
+    } else {
+      slots.forEach(slot => { slot._visible = true; playSlot(slot); });
+    }
+    document.addEventListener('visibilitychange', () => {
+      slots.forEach(slot => {
+        if (document.visibilityState === 'hidden') pauseSlot(slot);
+        else if (slot._visible) playSlot(slot);
+      });
+    });
+    initSurfcamLayoutBar();
+    initSurfcamExpand();
   }
 
-  // Hook into existing toggleSection — patch it after the page script runs
-  window.addEventListener('load', () => {
+  window.addEventListener('DOMContentLoaded', () => {
     const origToggle = window.toggleSection;
     window.toggleSection = function(id) {
       origToggle(id);
       if (id === 'surfcams') {
         const body = document.getElementById('section-surfcams');
         if (body && !body.classList.contains('collapsed')) {
-          startSurfcams();
-          // Peek layout bar
           const bar = document.getElementById('surfcam-layout-bar');
           if (bar) {
             bar.classList.add('peek');
@@ -5149,8 +5691,6 @@ bar.classList.add('peek');setTimeout(function(){bar.classList.remove('peek')},22
         }
       }
     };
-
-    // Section is expanded by default — start cams immediately
     startSurfcams();
     const bar = document.getElementById('surfcam-layout-bar');
     if (bar) {
@@ -5159,7 +5699,6 @@ bar.classList.add('peek');setTimeout(function(){bar.classList.remove('peek')},22
     }
   });
 
-  // ── Layout switcher ────────────────────────────────────────────────────────
   function initSurfcamLayoutBar() {
     const cams = document.getElementById('surfcam-cams');
     const btns = document.querySelectorAll('.surfcam-layout-btn');
@@ -5184,7 +5723,6 @@ bar.classList.add('peek');setTimeout(function(){bar.classList.remove('peek')},22
     });
   }
 
-  // ── Fullscreen expand ──────────────────────────────────────────────────────
   function initSurfcamExpand() {
     document.querySelectorAll('.surfcam-expand-btn').forEach(btn => {
       btn.addEventListener('click', e => {
